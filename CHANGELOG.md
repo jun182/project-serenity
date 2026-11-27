@@ -18,6 +18,7 @@ Builds are numbered b1, b2, ...; the in-game debug overlay shows the build numbe
   and handle. "A" disc and START badge in the same style. Settings "Button style" (Classic / Paint / Rhombus) and the four shape
   sliders of the UI tweak panel removed. Fix: a button selected when the menu closed no longer stays highlighted on reopening.
   Style recorded in `specs/system/ui-style.md` (constitution rule 7 points to it). Feature 004.
+- Docs: `specs/system/menus.md` describes the merged start screen (Play button in touch mode, no hint / ripples); `controls.md` pad highlight matches `ui-style.md` (feature 005).
 
 ## b13 (2026-11-27)
 - Debug is hidden: the Debug panel / UI tweak panel / tuning sliders / invincible / zoom cubes only work after developer mode is unlocked, and developer mode resets on every app start. Unlock: tap the build number in Settings 7 times (hint shows only for the last 2 taps), or the Konami code (up up down down left right left right B A) on the start screen (keyboard or pad). While locked, all tunables use their defaults.

@@ -12,6 +12,7 @@ Resume: `git pull`, read AGENT-CHAT.md, then `gh issue list -R jun182/project-se
 - **OPEN (user, later):** add `mbpa1706@hamnesjo.se` to the GitHub account (github.com/settings/emails, then click the verification mail) so the older commits made with it link to jun182. The gh token lacks the `user` scope.
 - Gotchas: Nord 2T (`adb connect 100.64.3.98:5555`, may need reconnect) refuses `pm clear`; Nord 2T has b10 (live updater test: do not adb install there). New script file => first batch build fails CS0246, rebuild once, `grep "error CS" ~/unity-tools/build.log`.
 - **004 one button style (2026-11-27, branch `feature/button-style`):** all buttons white / black outline / black text, pad selection black; sliders and pad icons restyled; Button style setting + Brush.cs removed; style in `specs/system/ui-style.md`. Verified in the editor and on a Pixel 8 Pro (wireless adb; Windows PC: Unity 2022.2.8f1 at `G:/Unity` with its bundled adb, release key in `~/keys`); menu-check all ok. Real gamepad: works on PC (Xbox 360 pad, editor, developer-checked); not tested on a phone. Not released.
+- 005 (docs): menus.md start screen updated for the merged android-port work; the rest of specs/system/ (PlayerPrefs cache, dead-player freeze, material leak, README baseline) still to do. 004 + 005 retested on the Pixel 8 Pro after merging origin/main.
 - Found during 004, need their own folders: `Haptics.cs` breaks Windows builds (`Handheld` outside `#if UNITY_ANDROID`); `tools/ui-check.sh` taps an old menu layout.
 
 ## Parked

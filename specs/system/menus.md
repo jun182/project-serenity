@@ -13,8 +13,8 @@ Replaces the former `MENU-TREE.md` (b12 design notes, in git history).
   selection is black with a white outline and white text.
 
 ## Start screen (`MainMenu`)
-- **Touch mode:** pulsing "Touch to start" at the bottom (black on the white half, white on the black half). A tap anywhere: light
-  vibration, three water-ripple rings at the finger, game starts 0.55 s later. Small Exit button top-left.
+- **Touch mode:** a Play button (centre, lower half) starts the game; small Exit button top-left. No "Touch to start" text and no
+  ripples any more (removed on android-port, merged 2026-11-27). On PC / Web (not mobile) Space also starts the game.
 - **Pad mode:** Play and Exit buttons (centre, lower half), up/down moves, A/Enter confirms. An "A" disc icon next to Play.
 - Always: Menu button top-right (touch-only, START badge in pad mode). Update button top-left when a newer release exists (`updater.md`).
 - Start opens the menu. Esc / Android Back quits the app (task removed from recents).
