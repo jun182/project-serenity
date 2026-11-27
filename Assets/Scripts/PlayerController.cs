@@ -36,6 +36,7 @@ public class PlayerController : MonoBehaviour
     public static string DiagTheme = "-", DiagMusic = "-";
     public bool IsHealing { get { return healing; } }
     public bool IsDead { get { return hasDied; } }
+    public float MoveSpeed { get { return speed; } } // x units per frame, sign = direction (near-miss slide)
     public static PlayerController Instance { get; private set; }
     void Awake() { Instance = this; }
     void OnDestroy() { if (Instance == this) Instance = null; }
@@ -96,15 +97,16 @@ public class PlayerController : MonoBehaviour
     }
     if (gyroOn && !PauseMenu.IsPaused) hInput += GyroSettings.Steer();
     hInput = Mathf.Clamp(hInput, -1f, 1f);
-    float targetSpeed = hInput * topSpeed;
+    float top = topSpeed * GameSettings.Get("steerSpeed");
+    float targetSpeed = hInput * top;
     if (blocked)
-        targetSpeed = -topSpeed;
+        targetSpeed = -top;
     float x = gameObject.transform.position.x;
     if (x >= 14)
-        targetSpeed = -topSpeed;
+        targetSpeed = -top;
     else if (x <= -4)
-        targetSpeed = topSpeed;
-    speed = Mathf.Lerp(speed, targetSpeed * Time.deltaTime, accelerationSpeed * Time.deltaTime);
+        targetSpeed = top;
+    speed = Mathf.Lerp(speed, targetSpeed * Time.deltaTime, accelerationSpeed * GameSettings.Get("steerAccel") * Time.deltaTime);
     gameObject.transform.position += new Vector3(speed, 0f, 0f);
     // Serenity side is decided by x position (same boundary as HideObjectsPerSide): the physics trigger exit never fired on the phone.
     bool inSerenity = gameObject.transform.position.x > 5f;

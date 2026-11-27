@@ -48,6 +48,16 @@ public static class Haptics
     // Strong single thump when the player is hit.
     public static void Hit() { Wave(new long[] { 0, 90 }, new int[] { 0, 255 }); }
 
+    // Sharp short buzz on a near miss; strength = tunable (0 = off). Rate-limited so dense waves don't blur into one long buzz.
+    static float lastNear = -1f;
+    public static void NearMiss()
+    {
+        int amp = Mathf.RoundToInt(GameSettings.Get("nearMissBuzz"));
+        if (amp <= 0 || Time.unscaledTime - lastNear < 0.12f) return;
+        lastNear = Time.unscaledTime;
+        Wave(new long[] { 0, 35 }, new int[] { 0, Mathf.Clamp(amp, 1, 255) });
+    }
+
     // Soft double-beat "heartbeat" while healing.
     public static void Heartbeat() { Wave(new long[] { 0, 30, 110, 22 }, new int[] { 0, 90, 0, 60 }); }
 

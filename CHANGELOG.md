@@ -27,6 +27,8 @@ Builds are numbered b1, b2, ...; the in-game debug overlay shows the build numbe
 - Haptics: vibration on hit, soft heartbeat while healing in Serenity.
 - Screen shake (option, default ON, b5): strong on hit, small on a near miss; gentle rocking and zoom pulse in time
   with the heartbeat while healing.
+- Near miss (b7): short vibration (strength tunable, default 160/255) and a subtle sideways camera slide in the
+  direction the player is moving (follows the Screen shake option).
 
 ## Bug fixes vs. the original
 - Hits, damage and music changes never happened on Android: the Player's MusicManager reference was empty in the scene
@@ -40,3 +42,5 @@ Builds are numbered b1, b2, ...; the in-game debug overlay shows the build numbe
 - Kill me, Invincible, Difficulty +1, zoom test cubes, and a tuning page with sliders (seconds per level, win
   countdown, spawn rate, obstacle speed, spawn range, damage, heal speed, shake strength, near-miss distance,
   breathing zoom, plain-track time). Stored on the phone, no rebuild needed.
+- Tuning page b7: three columns, sliders snap to round steps, a Default button per slider plus "Reset all",
+  new sliders: steer speed, steer response, near-miss vibration, near-miss slide (negative = flip direction).

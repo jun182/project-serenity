@@ -143,7 +143,7 @@ public class PauseMenu : MonoBehaviour
         MakeButton(panel.transform, "Quit game", center, new Vector2(-340, -360), new Vector2(620, 100), QuitApp);
         // Right column: options, then debug-only tools (shown while Debug panel is ON).
         shakeLabel = MakeButton(panel.transform, "", center, new Vector2(340, 360), new Vector2(620, 100), ToggleShake).GetComponentInChildren<Text>();
-        MakeSlider(panel.transform, new Vector2(340, 205), 560, "endlessDensity", 0.5f, 3f, "Obstacles (Endless mode)");
+        MakeSlider(panel.transform, new Vector2(340, 205), 560, "endlessDensity", 0.5f, 3f, 0.05f, "Obstacles (Endless mode)");
         var dbg = new[] {
             MakeButton(panel.transform, "Kill me (test death)", center, new Vector2(340, -25), new Vector2(620, 90), DebugKill),
             MakeButton(panel.transform, "", center, new Vector2(340, -125), new Vector2(620, 90), ToggleInvincible),
@@ -203,7 +203,7 @@ public class PauseMenu : MonoBehaviour
             if (fpsAccum >= 0.5f)
             {
                 var pc = PlayerController.Instance;
-                string diag = pc == null ? "" : "\nbuild b6 " + PlayerController.DiagMusic + " trig " + PlayerController.DiagTrig + " hp " + Mathf.RoundToInt(pc.health) + " heal " + pc.IsHealing + " x " + pc.transform.position.x.ToString("0.0")
+                string diag = pc == null ? "" : "\nbuild b7 " + PlayerController.DiagMusic + " trig " + PlayerController.DiagTrig + " hp " + Mathf.RoundToInt(pc.health) + " heal " + pc.IsHealing + " x " + pc.transform.position.x.ToString("0.0")
                     + "\nhits " + PlayerController.DiagHits + " serIn " + PlayerController.DiagSerEnter + " serOut " + PlayerController.DiagSerExit + " " + PlayerController.DiagTheme
                     + "\ndead " + pc.IsDead + " err " + ErrCount + " shake " + CameraShake.Trauma.ToString("0.00")
                     + (GameDirector.Instance == null ? "" : "\n" + GameSettings.GameMode + " lvl " + GameDirector.Instance.Level.ToString("0.00")
@@ -312,7 +312,8 @@ public class PauseMenu : MonoBehaviour
         helpPanel.SetActive(false);
     }
 
-    // Debug tuning page: one slider per GameSettings.Tunables entry, two columns, values kept in PlayerPrefs.
+    // Debug tuning page: one slider per GameSettings.Tunables entry, three columns, values kept in PlayerPrefs.
+    // Layout fits the Pixel 9 Pro XL canvas (about 2150 x 965 units at this scaler): x within +-990, y within +-445.
     void BuildTuningPanel(Transform canvas)
     {
         tuningPanel = new GameObject("TuningPanel", typeof(Image));
@@ -321,31 +322,38 @@ public class PauseMenu : MonoBehaviour
         rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
         tuningPanel.GetComponent<Image>().color = new Color(0, 0, 0, 0.9f);
         var tun = GameSettings.Tunables;
-        var sliders = new System.Collections.Generic.List<Slider>();
+        var refresh = new System.Collections.Generic.List<System.Action>();
+        int perCol = Mathf.CeilToInt(tun.Length / 3f);
+        float rowGap = Mathf.Min(150f, 600f / Mathf.Max(1, perCol - 1));
         for (int i = 0; i < tun.Length; i++)
         {
-            int col = i < 6 ? 0 : 1, row = i < 6 ? i : i - 6;
-            sliders.Add(MakeSlider(tuningPanel.transform, new Vector2(col == 0 ? -460 : 460, 400 - row * 140), 760, tun[i].key, tun[i].min, tun[i].max, tun[i].label));
+            int col = i / perCol, row = i % perCol;
+            refresh.Add(MakeSlider(tuningPanel.transform, new Vector2(-680 + col * 680, 330 - row * rowGap), 600, tun[i].key, tun[i].min, tun[i].max, tun[i].step, tun[i].label));
         }
         var c = new Vector2(0.5f, 0.5f);
-        MakeButton(tuningPanel.transform, "Reset to defaults", c, new Vector2(-330, -460), new Vector2(560, 90), () =>
+        MakeButton(tuningPanel.transform, "Reset all to defaults", c, new Vector2(-330, -400), new Vector2(560, 90), () =>
         {
             GameSettings.ResetTunables();
-            for (int i = 0; i < tun.Length; i++) sliders[i].value = GameSettings.Get(tun[i].key);
+            foreach (var r in refresh) r();
         });
-        MakeButton(tuningPanel.transform, "Back", c, new Vector2(330, -460), new Vector2(560, 90), () => { tuningPanel.SetActive(false); PlayerPrefs.Save(); });
+        MakeButton(tuningPanel.transform, "Back", c, new Vector2(330, -400), new Vector2(560, 90), () => { tuningPanel.SetActive(false); PlayerPrefs.Save(); });
         tuningPanel.SetActive(false);
     }
 
-    Slider MakeSlider(Transform parent, Vector2 pos, float width, string key, float min, float max, string label)
+    // Returns an action that re-reads the stored value into the slider (after a reset).
+    // Values snap to `step`; the small "Default" button resets just this one.
+    System.Action MakeSlider(Transform parent, Vector2 pos, float width, string key, float min, float max, float step, string label)
     {
         var lgo = new GameObject(label + "Label", typeof(Text));
         lgo.transform.SetParent(parent, false);
         var lrt = lgo.GetComponent<RectTransform>();
-        lrt.anchorMin = lrt.anchorMax = new Vector2(0.5f, 0.5f); lrt.anchoredPosition = pos + new Vector2(0, 45); lrt.sizeDelta = new Vector2(width, 50);
+        lrt.anchorMin = lrt.anchorMax = new Vector2(0.5f, 0.5f); lrt.anchoredPosition = pos + new Vector2(-80, 45); lrt.sizeDelta = new Vector2(width - 160, 50);
         var lt = lgo.GetComponent<Text>();
-        lt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); lt.fontSize = 34; lt.color = Color.white; lt.alignment = TextAnchor.MiddleLeft;
+        lt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); lt.fontSize = 30; lt.color = Color.white; lt.alignment = TextAnchor.MiddleLeft;
+        lt.resizeTextForBestFit = true; lt.resizeTextMinSize = 18; lt.resizeTextMaxSize = 30;
         lt.raycastTarget = false;
+        var defBtn = MakeButton(parent, "Default", new Vector2(0.5f, 0.5f), pos + new Vector2(width * 0.5f - 70, 45), new Vector2(140, 50), () => { });
+        defBtn.GetComponentInChildren<Text>().fontSize = 26;
 
         var go = DefaultControls.CreateSlider(new DefaultControls.Resources());
         go.transform.SetParent(parent, false);
@@ -359,10 +367,17 @@ public class PauseMenu : MonoBehaviour
             else if (img.name == "Handle") { img.color = Color.white; img.rectTransform.sizeDelta = new Vector2(44, 20); }
         }
         var s = go.GetComponent<Slider>();
-        s.minValue = min; s.maxValue = max; s.value = GameSettings.Get(key);
-        System.Action<float> show = v => lt.text = label + ": " + v.ToString("0.##") + (Mathf.Approximately(v, GameSettings.Default(key)) ? " (default)" : "");
-        show(s.value);
-        s.onValueChanged.AddListener(v => { GameSettings.Set(key, v); show(v); });
-        return s;
+        s.minValue = min; s.maxValue = max;
+        System.Action<float> show = v => lt.text = label + ": " + v.ToString("0.##") + (Mathf.Abs(v - GameSettings.Default(key)) < step * 0.5f ? " (default)" : "");
+        System.Action load = () => { float v = GameSettings.Get(key); s.SetValueWithoutNotify(v); show(v); };
+        load();
+        s.onValueChanged.AddListener(v =>
+        {
+            v = Mathf.Clamp(Mathf.Round(v / step) * step, min, max);
+            s.SetValueWithoutNotify(v);
+            GameSettings.Set(key, v); show(v);
+        });
+        defBtn.onClick.AddListener(() => { GameSettings.Reset(key); load(); });
+        return load;
     }
 }
