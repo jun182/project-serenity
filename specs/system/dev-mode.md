@@ -17,6 +17,7 @@ the Debug panel, debug page, UI tweak panel and FPS overlay are hidden, whatever
 ## Debug panel (dev page toggle, pref `debugPanelVisible`)
 "Debug ON" = dev mode AND this pref. Shows:
 - top-right overlay: fps, build, music manager status, trigger count, hp, healing, x, hits, serenity enter/exit counts, theme,
+  white-side music volumes (`mus L <light> B <broken>`),
   dead, error count, shake, mode, level, rate, spawned, near misses, last error message.
 - the old scene DebugPanel (P toggles it in dev mode).
 - the **Debug...** entry on the in-game main menu page.
@@ -41,7 +42,8 @@ Game speed 0.5-5x step 0.5 (`Time.timeScale`; back to 1 on quit to menu, leaving
 | gyroTilt | Gyro screen tilt (max deg) | 3 | 0 | 8 | 0.5 |
 | shakeStrength | Shake strength | 1 | 0 | 3 | 0.1 |
 | breatheZoom | Breathing zoom % | 1.5 | 0 | 6 | 0.1 |
-| maxTimeInLight | Plain track time (s) | 0 | 0 | 30 | 1 |
+| musicBrokenStart | Broken starts (HP) | 60 | 0 | 100 | 1 |
+| musicBrokenOnly | Only broken (HP) | 30 | 0 | 100 | 1 |
 | nearMissDist | Near-miss distance | 1.5 | 0.5 | 4 | 0.1 |
 | nearMissBuzz | Near-miss vibration (0-255) | 160 | 0 | 255 | 5 |
 | nearMissSlide | Near-miss slide (minus = flip) | 0.35 | -1.5 | 1.5 | 0.05 |

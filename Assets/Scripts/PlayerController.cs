@@ -35,6 +35,7 @@ public class PlayerController : MonoBehaviour
     public static int DiagHits, DiagSerEnter, DiagSerExit, DiagTrig;
     public static string DiagTheme = "-", DiagMusic = "-";
     public bool IsHealing { get { return healing; } }
+    public MusicManagerController Music { get { return musicManagerController; } }
     public bool IsDead { get { return hasDied; } }
     public float MoveSpeed { get { return speed; } } // x units per frame, sign = direction (near-miss slide)
     public static PlayerController Instance { get; private set; }
@@ -63,10 +64,7 @@ public class PlayerController : MonoBehaviour
 
 
     // private Rigidbody rigidbody;
-    float timeInLight;
-
-    [SerializeField]
-    float maxTimeInLight;
+    bool sideSet; // false until the first Update picks the music for the starting side
 
     // Start is called before the first frame update
     void Start()
@@ -114,20 +112,24 @@ public class PlayerController : MonoBehaviour
     SteerNorm = (top > 0f && Time.deltaTime > 0f) ? Mathf.Clamp(speed / (top * Time.deltaTime), -1f, 1f) : 0f;
     // Serenity side is decided by x position (same boundary as HideObjectsPerSide): the physics trigger exit never fired on the phone.
     bool inSerenity = gameObject.transform.position.x > 5f;
-    if (inSerenity != healing && !hasDied)
+    // White-side music follows health: only Light at >= musicBrokenStart, only Broken at <= musicBrokenOnly, equal-power blend between.
+    // Set every frame (also on the black side, where both are muted) so leaving the black side starts at the right mix.
+    if (musicManagerController != null) musicManagerController.SetBrokenTarget(BrokenMixFor(health));
+    if ((inSerenity != healing || !sideSet) && !hasDied)
     {
+        bool first = !sideSet; sideSet = true;
         healing = inSerenity;
         if (healing)
         {
-            DiagSerEnter++; DiagTheme = "Dark(in)";
+            DiagTheme = "Dark(in)";
             musicManagerController.PlayTheme(MusicManagerController.Theme.Dark);
-            musicManagerController.PlaySound(MusicManagerController.Sound.IntoSerenity);
+            if (!first) { DiagSerEnter++; musicManagerController.PlaySound(MusicManagerController.Sound.IntoSerenity); }
         }
         else
         {
-            DiagSerExit++; DiagTheme = "Light(out)";
-            musicManagerController.PlayTheme(MusicManagerController.Theme.Light);
-            musicManagerController.PlaySound(MusicManagerController.Sound.IntoNoise);
+            DiagTheme = "White(out)";
+            musicManagerController.PlayTheme(MusicManagerController.Theme.LightBrokenMix);
+            if (!first) { DiagSerExit++; musicManagerController.PlaySound(MusicManagerController.Sound.IntoNoise); }
         }
     }
     if (healing && !blocked && health > 0)
@@ -162,27 +164,13 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-    if (healing) timeInLight = 0; // only reset on the serenity side (was every frame in the light: the plain-track timer never ran)
-
-
-
-        if (!healing)
-        {
-            timeInLight += Time.deltaTime;
-            if (timeInLight >= GameSettings.Get("maxTimeInLight"))
-            {
-                musicManagerController.PlayTheme(MusicManagerController.Theme.Broken);
-            }
-            // if (!dragging){
-            //     transform.position += new Vector3(velocity.x * Time.deltaTime, 0, 0) * SPEED;
-            // } else {
-            //     transform.position += new Vector3(velocity.x * Time.deltaTime, 0, 0) * SPEED / DRAG_MODIFIER;
-            // }
-
-
-            // (removed a duplicate copy of the timeInLight block above: it made the timer run at 2x)
-
-        }
+    }
+    // 0 = only Light, 1 = only Broken. Thresholds the wrong way round (only >= start): hard switch at musicBrokenOnly.
+    static float BrokenMixFor(float hp)
+    {
+        float start = GameSettings.Get("musicBrokenStart"), only = GameSettings.Get("musicBrokenOnly");
+        if (start <= only) return hp <= only ? 1f : 0f;
+        return Mathf.InverseLerp(start, only, hp);
     }
     void OnTriggerEnter(Collider collider)
         {

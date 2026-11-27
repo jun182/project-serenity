@@ -21,8 +21,8 @@ These files describe behaviour that exists. A change to behaviour updates them i
 ## Open questions (found while writing the baseline)
 Not fixed; each needs a decision and, if it changes behaviour, a feature spec.
 
-1. **Music on the white side.** `maxTimeInLight` defaults to 0, so on the white side the "broken" track replaces the "light" track
-   on the first frame. The light track is in practice never heard. Intended? (ISSUES.md "music leaves the serene track" may be this.)
+1. ~~**Music on the white side.**~~ Done in feature 006: the white side crossfades Light -> Broken by health (`audio-and-feel.md`);
+   `maxTimeInLight` removed.
 2. **Dead player still steers and heals** on `main` (gh #3). Fixed on `android-port`, not merged.
 3. **PlayerPrefs read every frame** during play (tilt on/off, screen shake, Invincible; gh #1). Cached on `android-port`, not merged.
 4. **Blocker spawner values are swapped** in the scene (`minTimeBetweenSpawns` 6, `maxTimeBetweenSpawns` 3). Works (Unity's `Random.Range` accepts either order) but reads wrong.

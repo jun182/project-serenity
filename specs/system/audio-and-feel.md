@@ -1,13 +1,20 @@
 # Audio and feel
 
-Code: `MusicManagerController.cs`, `PlayerController.cs`, `Haptics.cs`, `CameraShake.cs`, `CameraZoom.cs`.
+Code: `Assets/MusicManagerController.cs`, `PlayerController.cs`, `Haptics.cs`, `CameraShake.cs`, `CameraZoom.cs`.
 
 ## Music (GameplayScene)
-Three looping tracks start together; only one is unmuted at a time.
-- Starts on **Dark**.
-- Entering the black side: **Dark** + "into serenity" sound.
-- Leaving it: **Light** + "into noise" sound; after *maxTimeInLight* (0 s) on the white side **Broken** replaces it.
-  With the default 0 this happens on the first frame (open question 1).
+Three looping tracks (**Dark**, **Light**, **Broken** = a broken version of Light) start together and stay in sync.
+- **Black side:** only **Dark**, at any health.
+- **White side** (`Theme.LightBrokenMix`): Light and Broken crossfaded by health (0-100, same as the health bar):
+  - health >= *musicBrokenStart* (60): only Light;
+  - between *musicBrokenOnly* (30) and *musicBrokenStart*: both, **equal-power** (Light = cos(m * 90deg), Broken = sin(m * 90deg),
+    m = 0 at 60 to 1 at 30; at 45 both are 0.71);
+  - health <= *musicBrokenOnly*: only Broken. Thresholds the wrong way round (only >= start): hard switch at *musicBrokenOnly*.
+  - When health changes (a hit, healing) the mix glides there (SmoothDamp 0.15 s, settles in about 0.5 s). Frozen while paused.
+- **Side switch:** instant cut, with the "into serenity" (entering black) / "into noise" (leaving black) sound. Leaving the black
+  side starts directly at the mix for the current health (no glide).
+- **Game start:** the first frame picks the music for the side the player is on (no side-switch sound).
+- Death: health <= 0, so the white side is only Broken; plus the death sound.
 - Sounds: hit (alternates two clips), serenity blocked, death.
 
 ## Haptics (Android only; amplitude waveforms from API 26, plain pattern below)
