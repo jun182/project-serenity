@@ -105,6 +105,10 @@ public class PauseMenu : MonoBehaviour
             MakeButton(canvasGo.transform, "How to play", new Vector2(1, 1), new Vector2(-230, -80), new Vector2(420, 90), () => helpPanel.SetActive(true))
                 .GetComponentInChildren<Text>().fontSize = 36;
             BuildHelpPanel(canvasGo.transform);
+            // Update button (top-left, hidden until Updater finds a newer release).
+            var ub = MakeButton(canvasGo.transform, "", new Vector2(0, 1), new Vector2(330, -80), new Vector2(600, 90), () => { });
+            ub.GetComponentInChildren<Text>().fontSize = 36;
+            gameObject.AddComponent<Updater>().Init(ub, ub.GetComponentInChildren<Text>());
             RefreshLabels();
             return;
         }
@@ -163,7 +167,7 @@ public class PauseMenu : MonoBehaviour
         frt.anchoredPosition = new Vector2(-30, -20); frt.sizeDelta = new Vector2(1100, 420);
         fpsCounter = fgo.GetComponent<Text>();
         fpsCounter.alignment = TextAnchor.UpperRight; fpsCounter.fontSize = 34; fpsCounter.color = Color.yellow;
-        fpsCounter.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        fpsCounter.font = UiFont.Get();
         panel.SetActive(false);
         RefreshLabels();
     }
@@ -183,7 +187,7 @@ public class PauseMenu : MonoBehaviour
         trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one; trt.offsetMin = trt.offsetMax = Vector2.zero;
         var t = tgo.GetComponent<Text>();
         t.text = text; t.alignment = TextAnchor.MiddleCenter; t.fontSize = 48; t.color = Color.white;
-        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.font = UiFont.Get();
         return go.GetComponent<Button>();
     }
 
@@ -203,7 +207,7 @@ public class PauseMenu : MonoBehaviour
             if (fpsAccum >= 0.5f)
             {
                 var pc = PlayerController.Instance;
-                string diag = pc == null ? "" : "\nbuild b7 " + PlayerController.DiagMusic + " trig " + PlayerController.DiagTrig + " hp " + Mathf.RoundToInt(pc.health) + " heal " + pc.IsHealing + " x " + pc.transform.position.x.ToString("0.0")
+                string diag = pc == null ? "" : "\nbuild " + BuildInfo.Label + " " + PlayerController.DiagMusic + " trig " + PlayerController.DiagTrig + " hp " + Mathf.RoundToInt(pc.health) + " heal " + pc.IsHealing + " x " + pc.transform.position.x.ToString("0.0")
                     + "\nhits " + PlayerController.DiagHits + " serIn " + PlayerController.DiagSerEnter + " serOut " + PlayerController.DiagSerExit + " " + PlayerController.DiagTheme
                     + "\ndead " + pc.IsDead + " err " + ErrCount + " shake " + CameraShake.Trauma.ToString("0.00")
                     + (GameDirector.Instance == null ? "" : "\n" + GameSettings.GameMode + " lvl " + GameDirector.Instance.Level.ToString("0.00")
@@ -306,7 +310,7 @@ public class PauseMenu : MonoBehaviour
         var trt = tgo.GetComponent<RectTransform>();
         trt.anchorMin = trt.anchorMax = new Vector2(0.5f, 0.5f); trt.anchoredPosition = new Vector2(0, 60); trt.sizeDelta = new Vector2(1700, 820);
         var t = tgo.GetComponent<Text>();
-        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.fontSize = 40; t.color = Color.white;
+        t.font = UiFont.Get(); t.fontSize = 40; t.color = Color.white;
         t.alignment = TextAnchor.MiddleLeft; t.supportRichText = true; t.raycastTarget = false; t.text = HelpText;
         MakeButton(helpPanel.transform, "Close", new Vector2(0.5f, 0.5f), new Vector2(0, -440), new Vector2(560, 100), () => helpPanel.SetActive(false));
         helpPanel.SetActive(false);
@@ -349,7 +353,7 @@ public class PauseMenu : MonoBehaviour
         var lrt = lgo.GetComponent<RectTransform>();
         lrt.anchorMin = lrt.anchorMax = new Vector2(0.5f, 0.5f); lrt.anchoredPosition = pos + new Vector2(-80, 45); lrt.sizeDelta = new Vector2(width - 160, 50);
         var lt = lgo.GetComponent<Text>();
-        lt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); lt.fontSize = 30; lt.color = Color.white; lt.alignment = TextAnchor.MiddleLeft;
+        lt.font = UiFont.Get(); lt.fontSize = 30; lt.color = Color.white; lt.alignment = TextAnchor.MiddleLeft;
         lt.resizeTextForBestFit = true; lt.resizeTextMinSize = 18; lt.resizeTextMaxSize = 30;
         lt.raycastTarget = false;
         var defBtn = MakeButton(parent, "Default", new Vector2(0.5f, 0.5f), pos + new Vector2(width * 0.5f - 70, 45), new Vector2(140, 50), () => { });

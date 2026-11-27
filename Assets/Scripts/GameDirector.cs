@@ -20,7 +20,7 @@ public class GameDirector : MonoBehaviour
     public bool Progressive { get; private set; }
     public int Spawned; public int NearMisses;
 
-    Text timerText, bigText;
+    Text timerText, timerTextR, bigText; // timer = left (white) half copy, timerTextR = right (black) half copy
     float wonAt;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -38,11 +38,34 @@ public class GameDirector : MonoBehaviour
         var c = cgo.GetComponent<Canvas>(); c.renderMode = RenderMode.ScreenSpaceOverlay; c.sortingOrder = 900; // under the pause menu (1000)
         var sc = cgo.GetComponent<CanvasScaler>(); sc.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         sc.referenceResolution = new Vector2(1920, 1080); sc.matchWidthOrHeight = 0.5f;
-        timerText = MakeText(cgo.transform, new Vector2(0.5f, 1f), new Vector2(0, -60), 64);
+        // The timer sits on the white/black split (left white, right black): two copies, each clipped to its own half,
+        // black text + white outline on the white half and white text + black outline on the black half.
+        timerText = MakeTimerHalf(cgo.transform, true, Color.black, Color.white, 64);
+        timerTextR = MakeTimerHalf(cgo.transform, false, Color.white, Color.black, 64);
         bigText = MakeText(cgo.transform, new Vector2(0.5f, 0.5f), Vector2.zero, 110);
     }
 
     void OnDestroy() { if (Instance == this) Instance = null; }
+
+    static Text MakeTimerHalf(Transform parent, bool left, Color fill, Color outline, int size)
+    {
+        var pgo = new GameObject(left ? "TimerLeft" : "TimerRight", typeof(RectMask2D));
+        pgo.transform.SetParent(parent, false);
+        var prt = pgo.GetComponent<RectTransform>();
+        prt.anchorMin = new Vector2(left ? 0f : 0.5f, 1f); prt.anchorMax = new Vector2(left ? 0.5f : 1f, 1f);
+        prt.pivot = new Vector2(0.5f, 1f); prt.anchoredPosition = Vector2.zero; prt.sizeDelta = new Vector2(0, 300);
+        var tgo = new GameObject("Text", typeof(Text));
+        tgo.transform.SetParent(pgo.transform, false);
+        var rt = tgo.GetComponent<RectTransform>();
+        // Anchored on the shared centre line: the right edge of the left panel / the left edge of the right panel.
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(left ? 1f : 0f, 1f);
+        rt.sizeDelta = new Vector2(1400, 300);
+        rt.pivot = new Vector2(0.5f, 1f); rt.anchoredPosition = new Vector2(0, 0);
+        var t = tgo.GetComponent<Text>();
+        t.font = UiFont.Get(); t.fontSize = size; t.alignment = TextAnchor.MiddleCenter; t.color = fill; t.raycastTarget = false;
+        var o = tgo.AddComponent<Outline>(); o.effectColor = outline; o.effectDistance = new Vector2(3, -3);
+        return t;
+    }
 
     static Text MakeText(Transform parent, Vector2 anchor, Vector2 pos, int size)
     {
@@ -51,7 +74,7 @@ public class GameDirector : MonoBehaviour
         var rt = go.GetComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = rt.pivot = anchor; rt.anchoredPosition = pos; rt.sizeDelta = new Vector2(1400, 300);
         var t = go.GetComponent<Text>();
-        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        t.font = UiFont.Get();
         t.fontSize = size; t.alignment = TextAnchor.MiddleCenter; t.color = new Color(1f, 0.35f, 0.1f);
         t.raycastTarget = false;
         // Outline keeps it readable on both the white and the black half.
@@ -93,7 +116,7 @@ public class GameDirector : MonoBehaviour
                 if (WinLeft <= 0f) { WinLeft = 0f; Won = true; wonAt = Time.unscaledTime; bigText.text = "you wonned"; }
             }
         }
-        timerText.text = Fmt(Elapsed) + (WinLeft >= 0f && !Won ? "\nsurvive " + Mathf.CeilToInt(WinLeft) : "");
+        timerText.text = timerTextR.text = Fmt(Elapsed) + (WinLeft >= 0f && !Won ? "\nsurvive " + Mathf.CeilToInt(WinLeft) : "");
     }
 
     static string Fmt(float s) { int t = Mathf.FloorToInt(s); return (t / 60) + ":" + (t % 60).ToString("00"); }

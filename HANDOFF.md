@@ -18,6 +18,23 @@ Resume order: (1) ask the user for b7 test results, (2) tick off open issues + w
 - **Nord 2T** (CPH2399, USB serial `INBY4PTGT8NJROFY`): wireless adb via `adb tcpip 5555` over USB, then
   `adb connect 100.64.3.98:5555` (Tailscale `johola2t`). Lasts until reboot.
 
+- **Release signing (2026-11-27, user approved):** keystore `~/keys/serenity-release.jks` + `~/keys/serenity-release.pass` (alias `serenity`, outside any repo;
+  the user must back both up). `BuildAndroid.cs` now sets package **`se.vibing.serenity`**, release signing (refuses to build without the key), release build
+  (no "Development Build" bar), output `Builds/project-serenity-release.apk`. First build was running when this was written: verify with
+  `apksigner verify --print-certs` (not the debug key), install on the Nord 2T next to the old app (different package), run `tools/ui-check.sh`.
+  Everyone must uninstall the old `com.DefaultCompany.ProjectSerenity` once (settings reset). Overlay still says "build b7" (hard-coded in PauseMenu.cs ~206).
+- **In-app updater (user approved 2026-11-27):** check GitHub at EVERY start, fork `jun182/project-serenity`, fixed tags `alpha-bN`, in-app download + install.
+  Design: `GET api.github.com/repos/jun182/project-serenity/releases` (list endpoint: `/latest` skips pre-releases), highest `alpha-bN` vs current build number;
+  one build-number source (`BuildInfo`), also used as `bundleVersionCode` (Android refuses updates with a lower code). "Update available" button on the start
+  screen → download APK to app files dir with progress → `ACTION_VIEW` install intent. Needs: INTERNET permission (`forceInternetPermission`),
+  `REQUEST_INSTALL_PACKAGES`, a custom manifest in `Assets/Plugins/Android/`, `canRequestPackageInstalls()` check (else open "Install unknown apps" settings for the app).
+  **No androidx in the generated Gradle project, so no `FileProvider`:** write a minimal Java `ContentProvider` (serves the one APK, read-only) in `Assets/Plugins/Android/`.
+  Failures must stay silent (offline = no button). Test on the Nord 2T by publishing a higher-numbered test release. Updates only install over builds with the release key.
+- **User's instructions (2026-11-27, end of session):** build the updater, then commit + push ALL uncommitted work (explicit OK given for that, after the updater is in),
+  test on the Nord 2T and report whether it works; if it does, cut a new release (`alpha-bN`, fork `jun182/project-serenity`, pass `-R`), then update this board and tell the user to /clear.
+  Signing build `Builds/project-serenity-release.apk` was started in the background (check `pgrep -x Unity`, `~/unity-tools/build.log`); verify it first.
+- **Uncommitted:** font change, interim timer, tools/ui-check.sh, signing changes. The auto-mode classifier blocked my commit/push (reason unclear): the user commits or says go explicitly.
+
 ## Next 1: tick off open issues
 - ISSUES.md is stale: #1-#4, #8, #9 look resolved by user tests (install, touch, pause, tilt, death, music): confirm with the user, move to Done.
   Still open: #5 controller (untested), #7 frame rate 90 → ~80 fps.

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Merged into the generated manifest. Internet + install permission and the provider for the in-app updater (Updater.cs). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="se.vibing.serenity.updater">
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+  <application>
+    <provider
+        android:name="se.vibing.serenity.UpdateProvider"
+        android:authorities="se.vibing.serenity.updateprovider"
+        android:exported="false"
+        android:grantUriPermissions="true" />
+  </application>
+</manifest>
