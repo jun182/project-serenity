@@ -12,15 +12,16 @@ public static class GyroSettings
 {
     public const float DeadZone = 0.06f; // ~3.5 degrees
     public const float FullTilt = 0.40f; // ~23 degrees = full speed
+    static bool? enabled, invert; // cached PlayerPrefs (read every frame)
     public static bool Enabled
     {
-        get { return PlayerPrefs.GetInt("gyroEnabled", 0) == 1; }
-        set { PlayerPrefs.SetInt("gyroEnabled", value ? 1 : 0); PlayerPrefs.Save(); }
+        get { if (!enabled.HasValue) enabled = PlayerPrefs.GetInt("gyroEnabled", 0) == 1; return enabled.Value; }
+        set { enabled = value; PlayerPrefs.SetInt("gyroEnabled", value ? 1 : 0); PlayerPrefs.Save(); }
     }
     public static bool Invert
     {
-        get { return PlayerPrefs.GetInt("gyroInvert", 0) == 1; }
-        set { PlayerPrefs.SetInt("gyroInvert", value ? 1 : 0); PlayerPrefs.Save(); }
+        get { if (!invert.HasValue) invert = PlayerPrefs.GetInt("gyroInvert", 0) == 1; return invert.Value; }
+        set { invert = value; PlayerPrefs.SetInt("gyroInvert", value ? 1 : 0); PlayerPrefs.Save(); }
     }
     public static float Steer()
     {
@@ -38,7 +39,9 @@ public class PauseMenu : MonoBehaviour
 {
     public const string DebugPrefKey = "debugPanelVisible"; // 0 = hidden (default), 1 = shown
     // Debug output only ever shows when developer mode is unlocked this session (GameSettings.DevMode) AND the pref is on.
-    public static bool DebugOn { get { return GameSettings.DevMode && PlayerPrefs.GetInt(DebugPrefKey, 0) == 1; } }
+    static bool? debugPref; // cached: DebugOn is read every frame
+    public static bool DebugOn { get { if (!debugPref.HasValue) debugPref = PlayerPrefs.GetInt(DebugPrefKey, 0) == 1; return GameSettings.DevMode && debugPref.Value; } }
+    public static void SetDebugPref(bool on) { debugPref = on; PlayerPrefs.SetInt(DebugPrefKey, on ? 1 : 0); }
 
     Text debugLabel, gyroLabel, invertLabel, rateLabel, modeLabel, shakeLabel, invLabel, markLabel;
     GameObject tuningPanel, helpPanel; readonly System.Collections.Generic.List<GameObject> devOnly = new System.Collections.Generic.List<GameObject>(); readonly System.Collections.Generic.List<GameObject> debugOnly = new System.Collections.Generic.List<GameObject>();
@@ -467,7 +470,7 @@ public class PauseMenu : MonoBehaviour
 
     void ToggleDebug()
     {
-        PlayerPrefs.SetInt(DebugPrefKey, PlayerPrefs.GetInt(DebugPrefKey, 0) == 1 ? 0 : 1);
+        SetDebugPref(!(debugPref ?? PlayerPrefs.GetInt(DebugPrefKey, 0) == 1));
         PlayerPrefs.Save();
         RefreshLabels();
     }

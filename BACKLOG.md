@@ -22,3 +22,6 @@
 
 ## Pixel 9 Pro XL wireless adb + fresh install (parked 2026-11-27, user: not relevant to the game)
 - Over USB it shows only as MTP (18d1:4ee1): needs USB debugging authorised / Wireless debugging on the same Wi-Fi before adb can see it. b11/b12 not installed there.
+
+## Steering-direction camera jitter, issue #9 (parked 2026-11-27)
+- Draft PR #10 (`copilot/screen-jitters-steering-direction`): `SteerNorm` made frame-time independent in `PlayerController.cs`. Reviewed by reading only: same feel at constant frame time, not built or run. Needs a real-device gyro tilt test, which also shows whether the jitter was this bug. Retarget the PR to `main` when picked up.

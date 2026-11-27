@@ -5,16 +5,18 @@ public static class GameSettings
 {
     public enum Mode { Progressive = 0, Endless = 1 }
 
+    // PlayerPrefs reads are slow on Android and these are read every frame: cache them (the setters keep the cache in sync).
+    static Mode? gameMode; static bool? screenShake;
     public static Mode GameMode
     {
-        get { return (Mode)PlayerPrefs.GetInt("gameMode", 0); }
-        set { PlayerPrefs.SetInt("gameMode", (int)value); PlayerPrefs.Save(); }
+        get { if (!gameMode.HasValue) gameMode = (Mode)PlayerPrefs.GetInt("gameMode", 0); return gameMode.Value; }
+        set { gameMode = value; PlayerPrefs.SetInt("gameMode", (int)value); PlayerPrefs.Save(); }
     }
 
     public static bool ScreenShake
     {
-        get { return PlayerPrefs.GetInt("screenShake", 1) == 1; }
-        set { PlayerPrefs.SetInt("screenShake", value ? 1 : 0); PlayerPrefs.Save(); }
+        get { if (!screenShake.HasValue) screenShake = PlayerPrefs.GetInt("screenShake", 1) == 1; return screenShake.Value; }
+        set { screenShake = value; PlayerPrefs.SetInt("screenShake", value ? 1 : 0); PlayerPrefs.Save(); }
     }
 
     // Endless mode obstacle amount, 1 = the original rate (one obstacle per 0.15 s).
