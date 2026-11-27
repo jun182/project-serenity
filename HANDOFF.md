@@ -10,6 +10,12 @@ Resume order: (1) ask the user for b7 test results, (2) tick off open issues + w
   - Near-miss vibration strong enough (slider 0-255, default 160)? Slide too subtle/strong (default 0.35), right direction
     (negative = flip)? Slide + near-miss shake are off when Screen shake is OFF; vibration is not.
   - Do the tuning page (3 columns) and the per-slider Default buttons fit/work on the Pixel? Labels auto-shrink (best fit).
+- **Tester install failure (2026-11-27):** a tester got "Can't install app / There's a problem with the app file" on b7.
+  Checked: APK intact, v1+v2 signed (Android debug key, same as b6), sha256 `3f0d5e1b…fde8af`. b7 installed + launched
+  to the main menu on the Y700 (Android 16, arm64, via wireless adb; still installed there; Play not pressed).
+  So the cause is on the tester's side: likely a corrupt/partial download or a non-arm64 device (build is arm64-v8a only;
+  fix = add ARMv7 in Player Settings). Waiting for the tester's device/Android version and file hash. Oddity: b7 has a 13 MB
+  zero-filled gap inside the zip (Gradle incremental packaging), harmless as far as tested.
 
 ## Next 1: tick off open issues
 - ISSUES.md is stale: #1-#4, #8, #9 look resolved by user tests (install, touch, pause, tilt, death, music): confirm with the user, move to Done.
