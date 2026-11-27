@@ -46,7 +46,7 @@ Placeholder shapes until real controller art exists.
 
 ## Backdrops and text (unchanged by 004, listed so new UI matches)
 - Menu backdrop: black at 75% over the game; How to play 92%; tuning page 90%; UI tweak panel 60%.
-- Text over the white / black split (timer, "Touch to start"): two copies, each clipped to its half: black with a white
+- Text over the white / black split (the game timer): two copies, each clipped to its half: black with a white
   outline on the white half, white with a black outline on the black half.
 
 ## Adding UI

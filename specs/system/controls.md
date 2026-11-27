@@ -25,7 +25,7 @@ B on the start screen (menu closed) does nothing.
 ## Input mode (pad vs touch)
 - The UI follows the last input: any pad or keyboard navigation input (axes > 0.5, arrows, Enter, any joystick button; not Esc) switches
   to **pad mode**; a touch or mouse click switches to **touch mode**.
-- Pad mode: selected item highlighted (white with black text, slight pulse, light select vibration), START badge shown next to the
+- Pad mode: selected item highlighted (black with white outline and white text, see `ui-style.md`; slight pulse, light select vibration), START badge shown next to the
   touch-only Menu / II button.
 - Touch mode: no highlight, no badge.
 - On the start screen, pad mode starts on if a joystick is connected at load. The input that switches to pad mode only wakes it and does nothing else.
