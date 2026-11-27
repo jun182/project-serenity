@@ -5,16 +5,18 @@ public static class GameSettings
 {
     public enum Mode { Progressive = 0, Endless = 1 }
 
+    static Mode? gameMode;
     public static Mode GameMode
     {
-        get { return (Mode)PlayerPrefs.GetInt("gameMode", 0); }
-        set { PlayerPrefs.SetInt("gameMode", (int)value); PlayerPrefs.Save(); }
+        get { if (!gameMode.HasValue) gameMode = (Mode)PlayerPrefs.GetInt("gameMode", 0); return gameMode.Value; }
+        set { PlayerPrefs.SetInt("gameMode", (int)value); gameMode = value; PlayerPrefs.Save(); }
     }
 
+    static bool? screenShake;
     public static bool ScreenShake
     {
-        get { return PlayerPrefs.GetInt("screenShake", 1) == 1; }
-        set { PlayerPrefs.SetInt("screenShake", value ? 1 : 0); PlayerPrefs.Save(); }
+        get { if (!screenShake.HasValue) screenShake = PlayerPrefs.GetInt("screenShake", 1) == 1; return screenShake.Value; }
+        set { PlayerPrefs.SetInt("screenShake", value ? 1 : 0); screenShake = value; PlayerPrefs.Save(); }
     }
 
     // Endless mode obstacle amount, 1 = the original rate (one obstacle per 0.15 s).

@@ -12,15 +12,16 @@ public static class GyroSettings
 {
     public const float DeadZone = 0.06f; // ~3.5 degrees
     public const float FullTilt = 0.40f; // ~23 degrees = full speed
+    static bool? enabled, invert;
     public static bool Enabled
     {
-        get { return PlayerPrefs.GetInt("gyroEnabled", 0) == 1; }
-        set { PlayerPrefs.SetInt("gyroEnabled", value ? 1 : 0); PlayerPrefs.Save(); }
+        get { if (!enabled.HasValue) enabled = PlayerPrefs.GetInt("gyroEnabled", 0) == 1; return enabled.Value; }
+        set { PlayerPrefs.SetInt("gyroEnabled", value ? 1 : 0); enabled = value; PlayerPrefs.Save(); }
     }
     public static bool Invert
     {
-        get { return PlayerPrefs.GetInt("gyroInvert", 0) == 1; }
-        set { PlayerPrefs.SetInt("gyroInvert", value ? 1 : 0); PlayerPrefs.Save(); }
+        get { if (!invert.HasValue) invert = PlayerPrefs.GetInt("gyroInvert", 0) == 1; return invert.Value; }
+        set { PlayerPrefs.SetInt("gyroInvert", value ? 1 : 0); invert = value; PlayerPrefs.Save(); }
     }
     public static float Steer()
     {
@@ -37,6 +38,13 @@ public static class GyroSettings
 public class PauseMenu : MonoBehaviour
 {
     public const string DebugPrefKey = "debugPanelVisible"; // 0 = hidden (default), 1 = shown
+
+    static bool? debugVisible;
+    public static bool DebugVisible
+    {
+        get { if (!debugVisible.HasValue) debugVisible = PlayerPrefs.GetInt(DebugPrefKey, 0) == 1; return debugVisible.Value; }
+        set { PlayerPrefs.SetInt(DebugPrefKey, value ? 1 : 0); debugVisible = value; }
+    }
 
     Text debugLabel, gyroLabel, invertLabel, rateLabel, modeLabel, shakeLabel, invLabel, markLabel;
     GameObject tuningPanel, helpPanel; readonly System.Collections.Generic.List<GameObject> debugOnly = new System.Collections.Generic.List<GameObject>();
@@ -270,7 +278,7 @@ public class PauseMenu : MonoBehaviour
             float f = hp == null ? 0f : Mathf.Clamp01(hp.health / PlayerController.HealthCap);
             healthFill.rectTransform.anchorMax = new Vector2(f, 1f);
         }
-        bool showFps = PlayerPrefs.GetInt(DebugPrefKey, 0) == 1;
+        bool showFps = DebugVisible;
         if (fpsCounter != null)
         {
             fpsCounter.enabled = showFps;
@@ -333,7 +341,7 @@ public class PauseMenu : MonoBehaviour
 
     void ToggleDebug()
     {
-        PlayerPrefs.SetInt(DebugPrefKey, PlayerPrefs.GetInt(DebugPrefKey, 0) == 1 ? 0 : 1);
+        DebugVisible = !DebugVisible;
         PlayerPrefs.Save();
         RefreshLabels();
     }
@@ -357,9 +365,9 @@ public class PauseMenu : MonoBehaviour
         if (shakeLabel) shakeLabel.text = "Screen shake: " + (GameSettings.ScreenShake ? "ON" : "OFF");
         if (invLabel) invLabel.text = "Invincible: " + (GameSettings.Invincible ? "ON" : "OFF");
         if (markLabel) markLabel.text = "Zoom test cubes (next run): " + (GameSettings.ZoomMarkers ? "ON" : "OFF");
-        bool dbgOn = PlayerPrefs.GetInt(DebugPrefKey, 0) == 1;
+        bool dbgOn = DebugVisible;
         foreach (var g in debugOnly) g.SetActive(dbgOn);
-        if (debugLabel) debugLabel.text = "Debug panel: " + (PlayerPrefs.GetInt(DebugPrefKey, 0) == 1 ? "ON" : "OFF");
+        if (debugLabel) debugLabel.text = "Debug panel: " + (dbgOn ? "ON" : "OFF");
     }
 
     void OnDestroy() { IsPaused = false; MenuOpen = false; GameSpeed = 1f; Time.timeScale = 1f; }

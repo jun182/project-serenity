@@ -40,14 +40,14 @@ public class DebugPanelController : MonoBehaviour
         if (dragModifierSlider) dragModifierSlider.value = playerController.DRAG_MODIFIER;
         if (accelerationModifierSlider) accelerationModifierSlider.value = playerController.ACCELERATION_MODIFIER;
         if (maxVelocitySlider) maxVelocitySlider.value = playerController.MAX_VELOCITY;
-        ApplyVisibility(PlayerPrefs.GetInt(PauseMenu.DebugPrefKey, 0) == 1);
+        ApplyVisibility(PauseMenu.DebugVisible);
     }
 
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.P))
-            PlayerPrefs.SetInt(PauseMenu.DebugPrefKey, PlayerPrefs.GetInt(PauseMenu.DebugPrefKey, 0) == 1 ? 0 : 1);
-        bool want = PlayerPrefs.GetInt(PauseMenu.DebugPrefKey, 0) == 1;
+            PauseMenu.DebugVisible = !PauseMenu.DebugVisible;
+        bool want = PauseMenu.DebugVisible;
         if (want != isDebugPanelActive) ApplyVisibility(want);
     }
 
