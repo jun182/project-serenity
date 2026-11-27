@@ -40,4 +40,9 @@ public class HideObjectsPerSide : MonoBehaviour
 
         matt.SetFloat("_Color", lightness);
     }
+
+    void OnDestroy()
+    {
+        Destroy(matt);
+    }
 }
