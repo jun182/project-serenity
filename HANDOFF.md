@@ -2,10 +2,7 @@
 Resume: menu rework (b7), user-approved: start screen + one shared menu (details below). First finish the b6 hand-off steps.
 
 ## In flight when the session was cleared
-- **b6 build** (help screen + Codex fixes) was running in the background. Check `~/unity-tools/build.log` for `Build result: Succeeded`
-  (early `error CS` lines about new classes are a harmless first compile pass). Then `cp Builds/project-serenity-debug.apk Builds/project-serenity-b6.apk`,
-  `tailscale file cp Builds/project-serenity-b6.apk pixel-9-pro-xl-1:`, delete the b6 line in `~/april-claudia/running.md`.
-  If Unity isn't running and there's no result, rebuild (command below).
+- b6 built and sent to the Pixel (2026-11-27); source committed (4240cfa).
 - **Gemini review** (agy, gemini-4-neon-high) was running, writing to `/tmp/claude-1000/-home-johola-Desktop--claude-projects/44d0b20f-4eab-4121-9580-c54628560ab7/scratchpad/review/gemini.md` (brief: `task.md`).
   Codex review is copied to `../project-serenity-review/codex.md`. Copy gemini.md there too. Then write `REVIEW.md` in the repo:
   verified findings (check each against the code) + feature ideas from both, for the user. Codex findings already fixed in b6:
