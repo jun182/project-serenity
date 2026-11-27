@@ -34,6 +34,7 @@ public static class GameSettings
         T("healSpeed", "Heal per second", 2, 0, 20, 0.5f),
         T("steerSpeed", "Steer speed x", 1, 0.5f, 2, 0.05f),
         T("steerAccel", "Steer response x", 1, 0.5f, 3, 0.1f),
+        T("gyroTilt", "Gyro screen tilt (max deg)", 3, 0, 8, 0.5f),
         T("shakeStrength", "Shake strength", 1, 0, 3, 0.1f),
         T("breatheZoom", "Breathing zoom %", 1.5f, 0, 6, 0.1f),
         T("maxTimeInLight", "Plain track time (s)", 0, 0, 30, 1),

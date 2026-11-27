@@ -56,6 +56,8 @@ public class CameraShake : MonoBehaviour
         roll += Mathf.Sin(Time.time * Mathf.PI / BeatPeriod) * 0.6f * breatheW;
         float phase = Mathf.Clamp01((Time.time - lastBeat) / BeatPeriod);
         float zoom = GameSettings.Get("breatheZoom") * 0.01f * breatheW * (0.5f + 0.5f * Mathf.Cos(phase * 2f * Mathf.PI));
+        // Gyro steering: lean the screen a little with the sideways velocity. Hard cap 8 degrees (slider max), default 3.
+        if (GyroSettings.Enabled && !PauseMenu.IsPaused) roll += PlayerController.SteerNorm * Mathf.Min(GameSettings.Get("gyroTilt"), 8f);
         transform.localPosition = basePos + baseRot * new Vector3(ox + slideOff, oy, 0f);
         transform.localRotation = baseRot * Quaternion.Euler(0f, 0f, roll);
         if (cam.orthographic) cam.orthographicSize = baseSize / (1f + zoom);

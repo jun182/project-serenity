@@ -10,7 +10,7 @@ public static class Brush
     public static readonly string[] StyleNames = { "Classic", "Paint", "Rhombus" };
     public static int Style
     {
-        get { return PlayerPrefs.GetInt("buttonStyle", 1); }
+        get { return PlayerPrefs.GetInt("buttonStyle", 2); }
         set { PlayerPrefs.SetInt("buttonStyle", value); PlayerPrefs.Save(); ReapplyAll(); }
     }
 

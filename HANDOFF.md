@@ -1,18 +1,18 @@
 # Board project-serenity (2026-11-27)
-Resume: print open issues (gh -R jun182/project-serenity). NEXT: user tests b12 with the real pad on the Y700; release alpha-b12 only on OK.
+Resume: print open issues (`gh issue list -R jun182/project-serenity`). b12 is on android-port and installed on the Y700 (adb 192.168.18.155:42501, reconnect with `adb connect`); user tests it. Release alpha-b12 ONLY on the user's OK.
 
 ## Open
-- **b12 built, NOT released** (apk Builds/project-serenity-b12.apk; waiting for the user's OK to release alpha-b12). Implemented per MENU-TREE.md: one page visible at a time (start-screen buttons, Menu/II hidden while a menu is open), B = back one level, Start = open/close menu (also on start screen; it no longer starts the game), START badge under Menu/II in pad mode, black/white pad icons (A disc, selection = white, pulses 3%, Haptics.Select tick on move; touch-to-start already had Haptics.Tap), START badge left of Menu (right of II: no room at the screen edge), smaller Play/Exit, NeverSleep while playing, `MENU page=.. sel=..` and `MENU key=JoystickButtonN` log lines, `tools/menu-check.sh` (adb key events): 18/18 ok on the Y700.
-- Measured: Unity on Android reports A=JoystickButton0, B=1, **Start=10** (not 7: that was why Start never worked in b11). Not verified with the real pad, only adb key events. Sliders: left/right works by Unity default, "A = reset" NOT done (Default button is focusable instead).
-- Done in b12 (screenshot-checked only for Paint on start screen + main menu page; Rhombus style, UI tweak panel and button-width slider NOT looked at): Settings > Button style Classic/Paint/Rhombus (Brush.cs, big buttons only, default Paint); Settings > UI tweak panel (shown only with Debug ON): live sliders GameSettings.UiTunables (slant, roughness, dry streaks, variant, pulse, width), no rebuild. Add new live variables there.
-- Idea from user (not decided): live-tweakable UI/design variables in the debug menu so UI changes need no rebuild.
-- Nord 2T has b10 (adb): open the start screen, expect the in-app updater to offer b11; this is the live updater test (do not adb install there).
-- Y700 (adb wireless): b11 installed fresh (old com.DefaultCompany.ProjectSerenity removed). Controller prompts/menu navigation to be tested there.
-- Y700 controller test by user (b11): works partly; findings in MENU-TREE.md. Pixel still not adb-visible (USB id 18d1:4ee1 = MTP only) at last check; b11 NOT installed there.
-- Pixel 9 Pro XL: user asked for wireless adb + fresh b11. Not done: over USB it shows only as MTP (no adb device, no mdns service). Needs USB debugging authorised / Wireless debugging on the same Wi-Fi.
-- GitHub issues enabled; #1-#3 assigned to Copilot (check for PRs, review before merge), #4 #5 for us. ui-check.sh needs a 2400x1080 device (Nord 2T); not run for b11 because the Nord was left for the user's updater/controller test. Was: can we use GitHub issues + PRs to let GitHub work issues (how software-humans site was built)? Not decided; discuss, nothing posted.
-- ISSUES.md stale (#3,#4,#8 resolved in code; #5 controller, #7 fps open). REVIEW.md not written. Old scene DebugPanel = removal candidate. Stale line in ~/april-claudia/running.md.
-- Gotcha: new script file => first batch build may fail CS0246; rebuild once and grep "error CS" ~/unity-tools/build.log.
+- **b12 (built, pushed 2026-11-27, NOT released):** MENU-TREE.md implemented (one page at a time, B back, Start = menu, START badge, black/white pad icons, pulse + select haptics, NeverSleep in play). `tools/menu-check.sh` 18/18 ok on Y700 (adb key events; Unity Android: A=JoystickButton0, B=1, Start=10).
+- Button style Settings toggle Classic/Paint/Rhombus (Brush.cs, default Rhombus); UI tweak panel (Settings, needs Debug ON) with live sliders `GameSettings.UiTunables`. Rhombus + tweak panel not looked at on screen.
+- Pad steering fixed: stick/d-pad/arrows via `GetAxisRaw("Horizontal")` (checked by adb long-press: player moves). Real pad not tested.
+- Gyro screen tilt (CameraShake, tunable `gyroTilt` 3 deg default, slider max 8 = hard cap, proportional to `PlayerController.SteerNorm`; leans +z when moving right): NOT tested, gyro can't be driven over adb. Sign/strength may need tuning.
+- Not done: A = reset on sliders (Default button is focusable instead). II badge sits right of II (no room left).
+- Open GitHub issues #1-#5 (#1-#3 assigned to Copilot: check PRs; #3 maybe fixed in code). ISSUES.md stale; REVIEW.md not written; old scene DebugPanel = removal candidate.
+- Nord 2T has b10: expect the in-app updater to offer the next release (live updater test; do not adb install there).
+- Gotcha: new script file => first batch build fails CS0246; rebuild once, `grep "error CS" ~/unity-tools/build.log`.
+
+## Parked
+- Pixel 9 Pro XL wireless adb + fresh install (BACKLOG.md). Live-tweak idea => done via UiTunables, extend there.
 
 ## Build/test
-Build: see git history of this file (BuildAndroid.Build, log ~/unity-tools/build.log, apk Builds/project-serenity-release.apk). `OUT=<dir> tools/ui-check.sh [apk]`. Never push upstream.
+`LD_LIBRARY_PATH=$HOME/unity-tools/libxml2-legacy/usr/lib ~/Unity/Hub/Editor/2022.2.8f1/Editor/Unity -batchmode -nographics -quit -projectPath "$PWD" -buildTarget Android -executeMethod BuildAndroid.Build -logFile ~/unity-tools/build.log` -> Builds/project-serenity-release.apk. `tools/menu-check.sh [apk]`, `OUT=<dir> tools/ui-check.sh [apk]` (2400x1080 Nord). Never push upstream.

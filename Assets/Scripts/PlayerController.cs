@@ -81,11 +81,13 @@ public class PlayerController : MonoBehaviour
     }
 
     // Update is called once per frame
+    public static float SteerNorm; // current sideways velocity, -1..1 of top speed (camera tilt in gyro mode)
     void Update()
 {
     if (PauseMenu.IsPaused) return; // movement adds `speed` per frame without dt, so it must not run while paused
 
-    float hInput = Convert.ToSingle(Input.GetKey(KeyCode.D)) - Convert.ToSingle(Input.GetKey(KeyCode.A));
+    // Keyboard A/D, arrows, controller stick (joystick X) and d-pad (arrow keys on Android) all feed the Horizontal axis.
+    float hInput = Input.GetAxisRaw("Horizontal");
     // Touch: hold the right half of the screen to move right, the left half to move left.
     bool gyroOn = GyroSettings.Enabled;
     for (int i = 0; i < Input.touchCount && !gyroOn; i++)
@@ -108,6 +110,7 @@ public class PlayerController : MonoBehaviour
         targetSpeed = top;
     speed = Mathf.Lerp(speed, targetSpeed * Time.deltaTime, accelerationSpeed * GameSettings.Get("steerAccel") * Time.deltaTime);
     gameObject.transform.position += new Vector3(speed, 0f, 0f);
+    SteerNorm = (top > 0f && Time.deltaTime > 0f) ? Mathf.Clamp(speed / (top * Time.deltaTime), -1f, 1f) : 0f;
     // Serenity side is decided by x position (same boundary as HideObjectsPerSide): the physics trigger exit never fired on the phone.
     bool inSerenity = gameObject.transform.position.x > 5f;
     if (inSerenity != healing && !hasDied)
