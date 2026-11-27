@@ -1,0 +1,53 @@
+# Spec-driven development (SDD)
+
+Every non-trivial change is written down and agreed **before** it is built. The specs live here, in the repo, next to the code.
+
+```
+specs/
+  README.md          this file: the process
+  constitution.md    rules no change may break
+  _templates/        spec.md, plan.md, tasks.md to copy
+  system/            how the game works TODAY (the source of truth for current behaviour)
+  features/
+    NNN-short-name/  one folder per change: spec.md, plan.md, tasks.md
+```
+
+## The flow
+1. **Idea.** From a GitHub issue, `BACKLOG.md`, or a developer explaining what they want.
+2. **Clarify.** Before writing anything, ask questions until the requirement is precise. Typical questions:
+   what problem it solves, who sees it (player / developer mode only), every input (touch, tilt, pad, keyboard) and both scenes
+   (start screen, game), edge cases (paused, dead, won, offline, setting already on), defaults and whether it is remembered
+   (PlayerPrefs) or per session, what is explicitly out of scope, and how we will know it works (which check, which device).
+   Ask in rounds; don't guess an answer the developer has not given. Unanswered points go into the spec as open questions.
+3. **Spec.** Create `features/NNN-short-name/spec.md` from the template (next free number, three digits). It says *what* and *why*,
+   never *how*: problem, goal, scope, out of scope, acceptance criteria. Status `draft`.
+4. **Approve.** The developer who asked (or the project owner) reads the spec and accepts the acceptance criteria. Status `approved`,
+   with date and name. No code before this.
+5. **Plan + tasks.** `plan.md`: which files change, approach, risks, how it will be built and tested. `tasks.md`: a checklist.
+   If the plan shows the spec is wrong, change the spec and get it approved again.
+6. **Implement** on a feature branch (`feature/<name>` or `fix/<name>`), from `main`. Status `in progress`.
+7. **Verify.** Check every acceptance criterion and write the result (pass / fail / not tested + why) in the spec's table.
+   Not tested is allowed; claiming a pass that was not checked is not. Status `verified`.
+8. **Update the system specs.** Change `system/*.md` so they describe the new behaviour, update `CHANGELOG.md`.
+   Status `done`. Then merge the branch into `main`.
+
+## Statuses
+`draft` -> `approved` -> `in progress` -> `verified` -> `done` (or `dropped`, with a reason).
+
+## Acceptance criteria
+Each criterion is one observable behaviour plus how it is checked. The checks available in this project:
+- `menu-check`: `tools/menu-check.sh` (adb key events, `MENU page=... sel=...` log lines)
+- `log`: another `adb logcat -s Unity` line (add a `Debug.Log` if needed)
+- `screenshot`: `tools/ui-check.sh`
+- `editor`: play mode in the Unity editor
+- `device`: by hand on a real phone (needed for tilt/gyro, real gamepad, haptics, sound); name the phone
+- `review`: reading the code or docs
+
+## When a spec can be skipped
+Typo and comment fixes, docs-only edits, a one-line bug fix with an obvious cause that changes no intended behaviour,
+and build/tooling changes that players never see. Still update `system/` and `CHANGELOG.md` if behaviour changed.
+When in doubt, write a short spec: it can be ten lines.
+
+## Claude Code commands
+`/spec <idea>` (clarify + write the spec), `/plan <NNN>`, `/tasks <NNN>`, `/verify <NNN>` (check criteria, update system specs).
+They live in `.claude/commands/`.
