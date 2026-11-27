@@ -29,6 +29,7 @@ public class StartScreen : MonoBehaviour
     GameObject iconA;
     Sprite ring;
     float loadAt = -1f, prevY;
+    const int Konami9 = 9; // PauseMenu.KonamiPos value just before the final A
     public static string Sel = "-"; // for the MENU log line
     bool lastMenuOpen;
 
@@ -185,7 +186,8 @@ public class StartScreen : MonoBehaviour
             if (down) { idx = (idx + 1) % items.Length; Highlight(); Haptics.Select(); }
             else if (up) { idx = (idx + items.Length - 1) % items.Length; Highlight(); Haptics.Select(); }
             // A / Enter confirms. Start opens the menu (PauseMenu), it no longer starts the game.
-            if (Input.GetKeyDown(KeyCode.JoystickButton0) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            bool konamiA = PauseMenu.KonamiPos == Konami9 || PauseMenu.KonamiFrame == Time.frameCount; // the last Konami key (A) must not press Play
+            if (!konamiA && (Input.GetKeyDown(KeyCode.JoystickButton0) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
                 items[idx].onClick.Invoke();
         }
         for (int i = 0; i < items.Length; i++) items[i].transform.localScale = Vector3.one * ((Controller && i == idx) ? PadIcons.Pulse() : 1f);

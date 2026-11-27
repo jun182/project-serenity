@@ -1,7 +1,9 @@
 # Board project-serenity (2026-11-27)
-Resume: print open issues (`gh issue list -R jun182/project-serenity`). b12 is on main and installed on the Y700 (adb 192.168.18.155:42501, reconnect with `adb connect`); user tests it. Release alpha-b12 ONLY on the user's OK.
+Resume: print open issues (`gh issue list -R jun182/project-serenity`). b13 (b12 + hidden developer mode) is on main; b12 is installed on the Y700 (adb 192.168.18.155:42501, reconnect with `adb connect`); user tests it. Release alpha-b13 (includes b12) ONLY on the user's OK. Workflow: CONTRIBUTING.md (main = release, feature branches). Agent instructions: CLAUDE.md.
 
 ## Open
+- **b13 (built 2026-11-27, NOT released):** developer mode hidden + session-only (7 taps on build number / Konami). `tools/menu-check.sh` all ok on the Nord 2T (pad via adb keys). Real pad d-pad Konami not tested. UI tweak panel now needs the dev unlock (not "Debug ON").
+- GitHub: `NightAnimal333` (original developer) invited as collaborator (write; GitHub has no higher level on a personal repo); invite must be accepted.
 - **b12 (built, pushed 2026-11-27, NOT released):** MENU-TREE.md implemented (one page at a time, B back, Start = menu, START badge, black/white pad icons, pulse + select haptics, NeverSleep in play). `tools/menu-check.sh` 18/18 ok on Y700 (adb key events; Unity Android: A=JoystickButton0, B=1, Start=10).
 - Button style Settings toggle Classic/Paint/Rhombus (Brush.cs, default Rhombus); UI tweak panel (Settings, needs Debug ON) with live sliders `GameSettings.UiTunables`. Rhombus + tweak panel not looked at on screen.
 - Pad steering fixed: stick/d-pad/arrows via `GetAxisRaw("Horizontal")` (checked by adb long-press: player moves). Real pad not tested.

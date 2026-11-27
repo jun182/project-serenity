@@ -37,9 +37,11 @@ public static class GyroSettings
 public class PauseMenu : MonoBehaviour
 {
     public const string DebugPrefKey = "debugPanelVisible"; // 0 = hidden (default), 1 = shown
+    // Debug output only ever shows when developer mode is unlocked this session (GameSettings.DevMode) AND the pref is on.
+    public static bool DebugOn { get { return GameSettings.DevMode && PlayerPrefs.GetInt(DebugPrefKey, 0) == 1; } }
 
     Text debugLabel, gyroLabel, invertLabel, rateLabel, modeLabel, shakeLabel, invLabel, markLabel;
-    GameObject tuningPanel, helpPanel; readonly System.Collections.Generic.List<GameObject> debugOnly = new System.Collections.Generic.List<GameObject>();
+    GameObject tuningPanel, helpPanel; readonly System.Collections.Generic.List<GameObject> devOnly = new System.Collections.Generic.List<GameObject>(); readonly System.Collections.Generic.List<GameObject> debugOnly = new System.Collections.Generic.List<GameObject>();
     public static bool IsPaused { get; private set; }
     static readonly int[] FrameRates = { 30, 60, 90, 120 };
     public static int FrameRate
@@ -205,10 +207,16 @@ public class PauseMenu : MonoBehaviour
         shakeLabel = item(set, "", ToggleShake).GetComponentInChildren<Text>();
         if (!inGame) modeLabel = item(set, "", ToggleMode).GetComponentInChildren<Text>();
         MakeSlider(set.transform, new Vector2(0, yy - 10), 640, "endlessDensity", 0.5f, 3f, 0.05f, "Obstacles (Endless mode)"); yy -= 120;
-        debugLabel = item(set, "", ToggleDebug).GetComponentInChildren<Text>();
         styleLabel = item(set, "", CycleStyle).GetComponentInChildren<Text>();
-        var uib = item(set, "", ToggleUiPanel); uiPanelLabel = uib.GetComponentInChildren<Text>(); debugOnly.Add(uib.gameObject);
-        back(set);
+        buildLabel = item(set, "", TapBuild).GetComponentInChildren<Text>(); // 7 taps = developer mode (like Android)
+        devOnly.Add(item(set, "Developer...", () => ShowPage("dev")).gameObject);
+        settingsBackY = yy; settingsBack = item(set, "Back", () => ShowPage("main")).GetComponent<RectTransform>();
+        // developer page (only reachable once unlocked)
+        var dev = newPage("dev"); yy = 360;
+        debugLabel = item(dev, "", ToggleDebug).GetComponentInChildren<Text>();
+        uiPanelLabel = item(dev, "", ToggleUiPanel).GetComponentInChildren<Text>();
+        item(dev, "Disable developer mode", DisableDev);
+        item(dev, "Back", () => ShowPage("settings"));
         // controls
         var ctl = newPage("controls"); yy = 360;
         gyroLabel = item(ctl, "", ToggleGyro).GetComponentInChildren<Text>();
@@ -250,7 +258,7 @@ public class PauseMenu : MonoBehaviour
 
     void ShowPage(string n)
     {
-        page = n;
+        page = n; buildTaps = 0;
         foreach (var kv in pages) kv.Value.SetActive(kv.Key == n);
         RefreshLabels();
         var es = EventSystem.current;
@@ -324,7 +332,8 @@ public class PauseMenu : MonoBehaviour
             float f = hp == null ? 0f : Mathf.Clamp01(hp.health / PlayerController.HealthCap);
             healthFill.rectTransform.anchorMax = new Vector2(f, 1f);
         }
-        bool showFps = PlayerPrefs.GetInt(DebugPrefKey, 0) == 1;
+        bool showFps = DebugOn;
+        UpdateKonami();
         if (fpsCounter != null)
         {
             fpsCounter.enabled = showFps;
@@ -416,6 +425,47 @@ public class PauseMenu : MonoBehaviour
 
     void QuitToMenu() { PlayerPrefs.Save(); IsPaused = false; MenuOpen = false; GameSpeed = 1f; Time.timeScale = 1f; SceneManager.LoadScene("MainMenu"); }
 
+    // ---- Developer mode unlock: 7 taps on the build number (Settings), or the Konami code on the start screen. Session-only. ----
+    const int TapsNeeded = 7;
+    int buildTaps; Text buildLabel; RectTransform settingsBack; float settingsBackY;
+    void TapBuild()
+    {
+        if (GameSettings.DevMode) { RefreshLabels(); return; }
+        if (++buildTaps >= TapsNeeded) { buildTaps = 0; SetDev(true); }
+        RefreshLabels();
+    }
+    void DisableDev() { SetDev(false); ShowPage("settings"); }
+    void SetDev(bool on)
+    {
+        GameSettings.DevMode = on;
+        if (!on) GameSpeed = 1f; // CloseMenu applies it to Time.timeScale
+        else Haptics.Select();
+        Debug.Log("MENU dev=" + (on ? "ON" : "OFF"));
+        RefreshLabels();
+    }
+
+    // Konami: up up down down left right left right B A. Start screen, menu closed. Keys and pad (B = JoystickButton1, A = JoystickButton0; d-pad as arrows or axes).
+    public static int KonamiFrame = -1; public static int KonamiPos;
+    static readonly int[] Konami = { 0, 0, 1, 1, 2, 3, 2, 3, 4, 5 }; // 0 up 1 down 2 left 3 right 4 B 5 A
+    float kx, ky;
+    void UpdateKonami()
+    {
+        if (inGame || MenuOpen || GameSettings.DevMode) { KonamiPos = 0; return; }
+        // Arrow keys (also what adb/pad d-pad key events arrive as) or the raw stick/d-pad axis edge; both fire on the same frame, so no double count.
+        float x = Input.GetAxisRaw("Horizontal"), y = Input.GetAxisRaw("Vertical");
+        int k = -1;
+        if (Input.GetKeyDown(KeyCode.UpArrow) || (y > 0.5f && ky <= 0.5f)) k = 0;
+        else if (Input.GetKeyDown(KeyCode.DownArrow) || (y < -0.5f && ky >= -0.5f)) k = 1;
+        else if (Input.GetKeyDown(KeyCode.LeftArrow) || (x < -0.5f && kx >= -0.5f)) k = 2;
+        else if (Input.GetKeyDown(KeyCode.RightArrow) || (x > 0.5f && kx <= 0.5f)) k = 3;
+        else if (Input.GetKeyDown(KeyCode.B) || Input.GetKeyDown(KeyCode.JoystickButton1)) k = 4;
+        else if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.JoystickButton0)) k = 5;
+        kx = x; ky = y;
+        if (k < 0) return;
+        if (k == Konami[KonamiPos]) KonamiPos++; else KonamiPos = k == 0 ? 1 : 0;
+        if (KonamiPos == Konami.Length) { KonamiPos = 0; KonamiFrame = Time.frameCount; SetDev(true); }
+    }
+
     void ToggleDebug()
     {
         PlayerPrefs.SetInt(DebugPrefKey, PlayerPrefs.GetInt(DebugPrefKey, 0) == 1 ? 0 : 1);
@@ -442,12 +492,15 @@ public class PauseMenu : MonoBehaviour
         if (shakeLabel) shakeLabel.text = "Screen shake: " + (GameSettings.ScreenShake ? "ON" : "OFF");
         if (invLabel) invLabel.text = "Invincible: " + (GameSettings.Invincible ? "ON" : "OFF");
         if (markLabel) markLabel.text = "Zoom test cubes (next run): " + (GameSettings.ZoomMarkers ? "ON" : "OFF");
-        bool dbgOn = PlayerPrefs.GetInt(DebugPrefKey, 0) == 1;
+        bool dbgOn = DebugOn;
         foreach (var g in debugOnly) g.SetActive(dbgOn);
+        foreach (var g in devOnly) g.SetActive(GameSettings.DevMode);
+        if (settingsBack) settingsBack.anchoredPosition = new Vector2(0, settingsBackY + (GameSettings.DevMode ? 0 : 120));
+        if (buildLabel) buildLabel.text = "Build " + BuildInfo.Label + (GameSettings.DevMode ? " (developer)" : buildTaps >= TapsNeeded - 2 ? " (" + (TapsNeeded - buildTaps) + (TapsNeeded - buildTaps == 1 ? " tap" : " taps") + " left)" : "");
         if (styleLabel) styleLabel.text = "Button style: " + Brush.StyleNames[Brush.Style];
         if (uiPanelLabel) uiPanelLabel.text = "UI tweak panel: " + (PlayerPrefs.GetInt("uiPanel", 0) == 1 ? "ON" : "OFF");
-        if (uiPanel) uiPanel.SetActive(dbgOn && PlayerPrefs.GetInt("uiPanel", 0) == 1);
-        if (debugLabel) debugLabel.text = "Debug panel: " + (PlayerPrefs.GetInt(DebugPrefKey, 0) == 1 ? "ON" : "OFF");
+        if (uiPanel) uiPanel.SetActive(GameSettings.DevMode && PlayerPrefs.GetInt("uiPanel", 0) == 1);
+        if (debugLabel) debugLabel.text = "Debug panel: " + (DebugOn ? "ON" : "OFF");
     }
 
     void OnDestroy() { Screen.sleepTimeout = (int)SleepTimeout.SystemSetting; IsPaused = false; MenuOpen = false; GameSpeed = 1f; Time.timeScale = 1f; }
