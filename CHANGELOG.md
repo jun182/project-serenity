@@ -8,6 +8,11 @@ Builds are numbered b1, b2, ...; the in-game debug overlay shows the build numbe
 - Frame rate setting 30/60/90/120 (Android otherwise caps at 30). Camera zoomed in 1.25x for phone screens.
 - "Quit game" closes the app fully (no reopening from recents).
 
+## b13 (2026-11-27)
+- Debug is hidden: the Debug panel / UI tweak panel / tuning sliders / invincible / zoom cubes only work after developer mode is unlocked, and developer mode resets on every app start. Unlock: tap the build number in Settings 7 times (hint shows only for the last 2 taps), or the Konami code (up up down down left right left right B A) on the start screen (keyboard or pad). While locked, all tunables use their defaults.
+- Settings: "Build bN" line; "Developer..." page (Debug panel, UI tweak panel, Disable developer mode) appears after unlock.
+- `tools/menu-check.sh` also checks locked by default, 7-tap unlock, Konami unlock, and re-lock after restart.
+
 ## b9 (2026-11-27)
 - First release with the in-app updater (b8 = same code, not released). Verified b8 -> b9 on a phone.
 

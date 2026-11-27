@@ -55,6 +55,9 @@ public static class GameSettings
     public static System.Action UiChanged;
     static Tunable T(string k, string l, float d, float min, float max, float step) { return new Tunable { key = k, label = l, def = d, min = min, max = max, step = step }; }
 
+    // Developer mode: session-only (static, so it is OFF at every app start). While it is off, every tunable and debug option
+    // behaves as its default no matter what an old PlayerPrefs value says. Unlocked from PauseMenu (7 taps on the build number or the Konami code).
+    public static bool DevMode;
     // Cached: obstacles read these every frame and PlayerPrefs on Android is slow.
     static readonly System.Collections.Generic.Dictionary<string, float> cache = new System.Collections.Generic.Dictionary<string, float>();
     public static float Default(string key)
@@ -66,6 +69,7 @@ public static class GameSettings
     public static float Get(string key)
     {
         float v;
+        if (!DevMode && key != "endlessDensity") return Default(key); // endlessDensity is a normal player slider
         if (!cache.TryGetValue(key, out v)) { v = PlayerPrefs.GetFloat("t_" + key, Default(key)); cache[key] = v; }
         return v;
     }
@@ -76,12 +80,12 @@ public static class GameSettings
 
     public static bool Invincible
     {
-        get { return PlayerPrefs.GetInt("invincible", 0) == 1; }
+        get { return DevMode && PlayerPrefs.GetInt("invincible", 0) == 1; }
         set { PlayerPrefs.SetInt("invincible", value ? 1 : 0); PlayerPrefs.Save(); }
     }
     public static bool ZoomMarkers
     {
-        get { return PlayerPrefs.GetInt("zoomMarkers", 0) == 1; }
+        get { return DevMode && PlayerPrefs.GetInt("zoomMarkers", 0) == 1; }
         set { PlayerPrefs.SetInt("zoomMarkers", value ? 1 : 0); PlayerPrefs.Save(); }
     }
 }
