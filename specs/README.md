@@ -13,6 +13,26 @@ specs/
     NNN-short-name/  one folder per change: spec.md, plan.md, tasks.md
 ```
 
+## Quick start (Claude Code)
+**One command:** `/create <idea>` runs the whole flow below in order and stops wherever you have to decide.
+
+**Or step by step**, in this order (each is a file in `.claude/commands/`):
+
+| # | Command | What it does | Needs | Produces | You decide |
+|---|---------|--------------|-------|----------|------------|
+| 1 | `/spec <idea>` | Asks clarifying questions, writes the spec | an idea, issue or backlog item | `features/NNN-name/spec.md` (`draft` -> `approved`) | answer the questions; **approve the spec** |
+| 2 | `/plan <NNN>` | Reads the code, writes the plan | spec `approved` | `plan.md` | **go-ahead to implement** |
+| 3 | `/tasks <NNN>` | Writes the task list, creates the branch, **implements** | spec `approved` (+ plan) | `tasks.md`, the change, status `in progress` | scope questions, if any |
+| 4 | `/verify <NNN>` | Checks every acceptance criterion, updates `system/`, `CHANGELOG.md`, `HANDOFF.md` | the implemented change | results in `spec.md`, status `verified` -> `done` | **commit and merge into `main`?**, then **push?** |
+
+- **Small changes** (typo, comment, docs edit, one-line fix, tooling tweak): you choose the short path (`/spec` with the
+  small-change template, then `/tasks`, then `/verify`; no plan or task list) or the full path. `/create` asks you.
+- Nothing is committed until you say yes at the end. Release tags only on the owner's OK (constitution rule 4).
+- **Resuming** an interrupted feature: say "continue NNN", or run the next command. The next step follows from the spec status:
+  `draft` -> approve the spec; `approved` without `plan.md` -> `/plan` (full path) or `/tasks` (short path);
+  `approved` with `plan.md` -> `/tasks`; `in progress` -> finish the unticked tasks, then `/verify`;
+  `verified` -> update `system/`, `CHANGELOG.md`, `HANDOFF.md`, then commit and merge on your OK.
+
 ## The flow
 1. **Idea.** From a GitHub issue, `BACKLOG.md`, or a developer explaining what they want.
 2. **Clarify.** Before writing anything, ask questions until the requirement is precise. Typical questions:
@@ -55,5 +75,4 @@ A change found while working on another feature gets its own folder, unless it i
 Updates to `HANDOFF.md` and `CHANGELOG.md` belong to the feature they describe and are committed with it.
 
 ## Claude Code commands
-`/spec <idea>` (clarify + write the spec), `/plan <NNN>`, `/tasks <NNN>`, `/verify <NNN>` (check criteria, update system specs).
-They live in `.claude/commands/`.
+`/create <idea>`, or `/spec` -> `/plan` -> `/tasks` -> `/verify`: see the quick start at the top. They live in `.claude/commands/`.

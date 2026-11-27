@@ -12,6 +12,7 @@ Builds are numbered b1, b2, ...; the in-game debug overlay shows the build numbe
 - Process: spec-driven development (`specs/`): constitution, templates, system specs of the current game, `/spec` `/plan` `/tasks` `/verify` commands. Feature branches now merge into `main`; `android-port` retired. MENU-TREE.md moved to `specs/system/menus.md`. No game change.
 
 - Process: every change, including trivial fixes and docs edits, gets a feature folder and goes through the workflow (feature 002); small-change template.
+- Process: quick start in `specs/README.md` (the SDD commands in order, what each needs and produces, where the developer decides, how to resume) and a new `/create <idea>` command that runs `/spec` -> `/plan` -> `/tasks` -> `/verify` with stops for approval, go-ahead, and commit/merge/push (feature 003).
 
 ## b13 (2026-11-27)
 - Debug is hidden: the Debug panel / UI tweak panel / tuning sliders / invincible / zoom cubes only work after developer mode is unlocked, and developer mode resets on every app start. Unlock: tap the build number in Settings 7 times (hint shows only for the last 2 taps), or the Konami code (up up down down left right left right B A) on the start screen (keyboard or pad). While locked, all tunables use their defaults.
