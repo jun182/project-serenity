@@ -67,6 +67,27 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
 {
+    if (health <= 0 || hasDied)
+    {
+        playerVisuals.active = false;
+        if (!hasDied)
+            musicManagerController.PlaySound(MusicManagerController.Sound.Death);
+        hasDied = true;
+
+        deathFloat = Mathf.Lerp(deathFloat, 1.1f, deathSpeed * Time.deltaTime);
+        blitMat.SetFloat("_DeathFloat", deathFloat);
+        Debug.Log("HEY");
+
+        if (deathFloat > 1f)
+        {
+            //Switch to other scene
+
+            SceneManager.LoadScene("MainMenu");
+            blitMat.SetFloat("_DeathFloat", -1f);
+        }
+        return;
+    }
+
     float hInput = Convert.ToSingle(Input.GetKey(KeyCode.D)) - Convert.ToSingle(Input.GetKey(KeyCode.A));
     float targetSpeed = hInput * topSpeed;
     if (blocked)
@@ -113,26 +134,6 @@ public class PlayerController : MonoBehaviour
             // }
 
 
-            if (health <= 0)
-            {
-                
-                playerVisuals.active = false;
-                if (!hasDied)
-                    musicManagerController.PlaySound(MusicManagerController.Sound.Death);
-                hasDied = true;
-
-                deathFloat = Mathf.Lerp(deathFloat, 1.1f, deathSpeed * Time.deltaTime);
-                blitMat.SetFloat("_DeathFloat", deathFloat);
-                Debug.Log("HEY");
-
-                if (deathFloat > 1f)
-                {
-                    //Switch to other scene
-                    
-                    SceneManager.LoadScene("MainMenu");
-                    blitMat.SetFloat("_DeathFloat", -1f);
-                }
-            }
             if (!healing) {
                 timeInLight += Time.deltaTime;
                 if (timeInLight >= maxTimeInLight)
@@ -151,7 +152,7 @@ public class PlayerController : MonoBehaviour
         {
             
             Debug.Log("TriggerEnter");
-        if (!hasDied)
+        if (!hasDied && health > 0)
         {
             if (collider.gameObject.tag == "Obstacle")
             {
@@ -181,6 +182,9 @@ public class PlayerController : MonoBehaviour
 
         void OnTriggerExit(Collider collider)
         {
+            if (hasDied || health <= 0)
+                return;
+
             Debug.Log("TriggerExit");
             if (collider.gameObject.tag == "Serenity")
             {
