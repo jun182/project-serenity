@@ -8,6 +8,9 @@ Builds are numbered b1, b2, ...; the in-game debug overlay shows the build numbe
 - Frame rate setting 30/60/90/120 (Android otherwise caps at 30). Camera zoomed in 1.25x for phone screens.
 - "Quit game" closes the app fully (no reopening from recents).
 
+## b9 (2026-11-27)
+- First release with the in-app updater (b8 = same code, not released). Verified b8 -> b9 on a phone.
+
 ## b8 (2026-11-27)
 - Permanent app identity `se.vibing.serenity`, signed with a release key (kept outside the repo); release build. Everyone must uninstall the old `com.DefaultCompany.ProjectSerenity` once.
 - In-app updater: at every start of the start screen the app checks the GitHub releases (`alpha-bN`) and shows "Update available: bN"; tap = download + system installer. Silent when offline.

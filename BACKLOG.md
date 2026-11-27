@@ -8,3 +8,14 @@
 - **Tilt recentre ("ratchet") button** (not started): a button (pause menu, maybe also on screen) that sets the current phone tilt as the new neutral position, for when the player sits or holds the phone at an angle. Store the offset (in memory, or PlayerPrefs) and subtract it from the tilt in `GyroSettings.Steer()` (`Assets/Scripts/PauseMenu.cs`). Needs real-phone testing: note the neutral is currently flat/level.
 - **Haptics + screen shake on hit/heal** (not started): short vibration when the player hits an obstacle and loses health (`PlayerController.OnTriggerEnter`, Obstacle branch), plus a slight camera shake; and a very light heartbeat-like pulse while healing in Serenity (`healing` branch). Android: `Handheld.Vibrate()` is fixed-length and crude; for short/soft pulses use the Android Vibrator API with amplitude (VibrationEffect) via `AndroidJavaObject`, needs the VIBRATE permission. Not tested.
 - **Real health display** (bar added in b4, untested; numeric text still unused): the scene's "Balance" text showed a static "999%" (never updated; hidden 2026-11-27). `HealthUI.UpdateHealthText` exists but nothing calls it.
+
+## Input-adaptive start menu / menus (user request 2026-11-27; do AFTER the updater is confirmed working)
+- General design pattern for ALL menus: UI follows the last-used input, switching dynamically (controller input detected -> controller mode; touch detected -> touch mode).
+- **Controller mode:** Play and Exit buttons visible; stick/d-pad moves the selection (highlight), A or Start confirms. Reserve space for controller button icons
+  (user adds the art later; use a placeholder icon for now).
+- **Touch mode (no controller):** start screen says "Touch to start"; visual feedback where the finger lands (water-droplet ripple waves) + vibration on touch
+  (reuse `Haptics`). Exit = normal small button at top-left (platform convention). Android Back on start screen = quit (already decided).
+- Fits the b8 menu rework (HANDOFF "Next 2"): one shared menu, start screen without buttons in touch mode.
+
+## Debug menu: game speed slider (user request 2026-11-27)
+- Slider in the debug tools (Time.timeScale, e.g. 0.5x-5x, default 1x) to fast-forward through difficulty levels/win while testing. Reset to 1x on leaving debug/quit to menu.
