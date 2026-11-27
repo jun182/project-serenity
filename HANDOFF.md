@@ -1,5 +1,5 @@
 # Board project-serenity (2026-11-27)
-Resume order: (1) ask the user for b7 test results, (2) tick off open issues + write REVIEW.md, (3) menu rework (b8).
+Resume order: (0) tester install failure (below), (1) ask the user for b7 test results, (2) tick off open issues + write REVIEW.md, (3) menu rework (b8).
 
 ## State
 - b5/b6 features tested OK by the user on the Pixel (modes, difficulty, win, shake, near miss, help, debug page).
@@ -13,11 +13,15 @@ Resume order: (1) ask the user for b7 test results, (2) tick off open issues + w
 - **Tester install failure (2026-11-27):** a tester got "Can't install app / There's a problem with the app file" on b7.
   Checked: APK intact, v1+v2 signed (Android debug key, same as b6), sha256 `3f0d5e1b…fde8af`. b7 installed + launched
   to the main menu on the Y700 (Android 16, arm64, via wireless adb; still installed there; Play not pressed).
-  So the cause is on the tester's side: likely a corrupt/partial download or a non-arm64 device (build is arm64-v8a only;
-  fix = add ARMv7 in Player Settings). Waiting for the tester's device/Android version and file hash. Oddity: b7 has a 13 MB
-  zero-filled gap inside the zip (Gradle incremental packaging), harmless as far as tested.
+  Tester's phone = **Pixel 8** (arm64), so the ABI theory is out. Oddity: b7 has a 13 MB zero-filled gap inside the zip
+  (Gradle incremental packaging), harmless as far as tested. Native libs are deflated (extractNativeLibs), so 16 KB page
+  alignment shouldn't block install (not tested on a 16 KB device).
   Rebuilt same code → `project-serenity-b7-rebuild1.apk` (sha256 `f1ce87e0…33cea0`), installs on the Y700; published as
   pre-release `alpha-b7-rebuild1` on jun182/project-serenity (fork; note `gh` defaults to upstream NightAnimal333, always pass `-R`).
+  Link: https://github.com/jun182/project-serenity/releases/download/alpha-b7-rebuild1/project-serenity-b7-rebuild1.apk
+  Unknown: whether the tester has tried the GitHub link yet. Next: get their Android version, how they open the file
+  (chat app preview vs Files app), their file's hash, an existing app with the same package from another key (uninstall first),
+  and ideally `adb install` output (exact error code). The user's Pixel 9 Pro XL can serve as a Pixel test device.
 
 ## Next 1: tick off open issues
 - ISSUES.md is stale: #1-#4, #8, #9 look resolved by user tests (install, touch, pause, tilt, death, music): confirm with the user, move to Done.
