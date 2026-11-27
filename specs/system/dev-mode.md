@@ -49,13 +49,10 @@ Game speed 0.5-5x step 0.5 (`Time.timeScale`; back to 1 on quit to menu, leaving
 "Reset all to defaults" deletes all `t_` keys of this table. Slider changes are saved when a sub-page or the menu closes.
 
 ## UI tweak panel (dev page toggle, pref `uiPanel`)
-Shown to the right of the menu while it is open; changes apply live to the big buttons (`Brush.cs`, `PadIcons.cs`).
+Shown to the right of the menu while it is open; changes apply live to the big buttons (`UiStyle.cs`, `PadIcons.cs`).
+The four shape sliders (slant, roughness, dry-brush, stroke variant) went with the Paint / Rhombus shapes (feature 004).
 | Key | Label | Default | Min | Max | Step |
 |-----|-------|---------|-----|-----|------|
-| uiSkew | Button slant | 0.35 | 0 | 1.2 | 0.05 |
-| uiRough | Edge roughness | 0.6 | 0 | 1.5 | 0.05 |
-| uiDry | Dry-brush streaks | 0.5 | 0 | 1 | 0.05 |
-| uiSeed | Stroke variant | 3 | 1 | 30 | 1 |
 | uiPulse | Selection pulse % | 3 | 0 | 10 | 0.5 |
 | uiBtnScale | Menu button width x | 1 | 0.6 | 1.4 | 0.05 |
 

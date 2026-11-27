@@ -41,7 +41,7 @@ step "BUTTON_START"              "page=game sel=-"
 dev() { $A logcat -d -s Unity | grep -o 'MENU dev=.*' | tail -1; }
 $A shell am force-stop $PKG; $A logcat -c; $A shell monkey -p $PKG -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; sleep 10
 $A shell input keyevent KEYCODE_DPAD_DOWN; sleep 1; $A shell input keyevent KEYCODE_DPAD_UP; sleep 1
-step "BUTTON_START DPAD_DOWN BUTTON_A DPAD_DOWN DPAD_DOWN DPAD_DOWN DPAD_DOWN DPAD_DOWN" "page=settings sel=Build b$(grep -o 'Number = [0-9]*' Assets/Scripts/BuildInfo.cs | grep -o '[0-9]*')"
+step "BUTTON_START DPAD_DOWN BUTTON_A DPAD_DOWN DPAD_DOWN DPAD_DOWN DPAD_DOWN" "page=settings sel=Build b$(grep -o 'Number = [0-9]*' Assets/Scripts/BuildInfo.cs | grep -o '[0-9]*')"   # Frame rate, Shake, Mode, Obstacles slider, Build
 [ -z "$(dev)" ] && echo "ok    dev mode off by default" || { echo "FAIL  dev mode on before unlock"; fail=1; }
 for i in 1 2 3 4 5 6; do $A shell input keyevent KEYCODE_BUTTON_A; sleep 0.5; done
 [ -z "$(dev)" ] && echo "ok    6 taps: still locked" || { echo "FAIL  unlocked after 6 taps"; fail=1; }

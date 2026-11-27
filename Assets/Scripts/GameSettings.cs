@@ -42,13 +42,9 @@ public static class GameSettings
         T("nearMissBuzz", "Near-miss vibration (0-255)", 160, 0, 255, 5),
         T("nearMissSlide", "Near-miss slide (minus = flip)", 0.35f, -1.5f, 1.5f, 0.05f),
     };
-    // Look-and-feel numbers for the UI tweak panel (debug): change live on the device, no rebuild. Brush.cs / PadIcons.cs read them.
+    // Look-and-feel numbers for the UI tweak panel (debug): change live on the device, no rebuild. UiStyle.cs / PadIcons.cs read them.
     public static readonly Tunable[] UiTunables =
     {
-        T("uiSkew", "Button slant", 0.35f, 0, 1.2f, 0.05f),
-        T("uiRough", "Edge roughness", 0.6f, 0, 1.5f, 0.05f),
-        T("uiDry", "Dry-brush streaks", 0.5f, 0, 1, 0.05f),
-        T("uiSeed", "Stroke variant", 3, 1, 30, 1),
         T("uiPulse", "Selection pulse %", 3, 0, 10, 0.5f),
         T("uiBtnScale", "Menu button width x", 1, 0.6f, 1.4f, 0.05f),
     };
