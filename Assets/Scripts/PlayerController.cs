@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
 
     public float topSpeed;
     public float accelerationSpeed;
-    private float speed;
+    private float speed, steerVel; // steerVel = sideways velocity as -1..1 of top speed (frame-time independent)
 
     private float deathFloat;
     public float deathSpeed;
@@ -108,10 +108,12 @@ public class PlayerController : MonoBehaviour
         targetSpeed = -top;
     else if (x <= -4)
         targetSpeed = top;
-    speed = Mathf.Lerp(speed, targetSpeed * Time.deltaTime, accelerationSpeed * GameSettings.Get("steerAccel") * Time.deltaTime);
-    if (hasDied) speed = 0f; // dead: freeze during the fade-out (was: kept steering until the scene reloaded)
-    else gameObject.transform.position += new Vector3(speed, 0f, 0f);
-    SteerNorm = (top > 0f && Time.deltaTime > 0f) ? Mathf.Clamp(speed / (top * Time.deltaTime), -1f, 1f) : 0f;
+    // Smooth the normalised velocity; speed (units per frame) is derived from it, so a changing frame time cannot jitter SteerNorm.
+    steerVel = Mathf.Lerp(steerVel, top > 0f ? targetSpeed / top : 0f, accelerationSpeed * GameSettings.Get("steerAccel") * Time.deltaTime);
+    if (hasDied) steerVel = 0f; // dead: freeze during the fade-out (was: kept steering until the scene reloaded)
+    speed = steerVel * top * Time.deltaTime;
+    if (!hasDied) gameObject.transform.position += new Vector3(speed, 0f, 0f);
+    SteerNorm = Mathf.Clamp(steerVel, -1f, 1f);
     // Serenity side is decided by x position (same boundary as HideObjectsPerSide): the physics trigger exit never fired on the phone.
     bool inSerenity = gameObject.transform.position.x > 5f;
     if (inSerenity != healing && !hasDied)
