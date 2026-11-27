@@ -1,5 +1,5 @@
 # Board project-serenity (2026-11-27)
-Resume: print open issues (`gh issue list -R jun182/project-serenity`). b12 is on android-port and installed on the Y700 (adb 192.168.18.155:42501, reconnect with `adb connect`); user tests it. Release alpha-b12 ONLY on the user's OK.
+Resume: print open issues (`gh issue list -R jun182/project-serenity`). b12 is on main and installed on the Y700 (adb 192.168.18.155:42501, reconnect with `adb connect`); user tests it. Release alpha-b12 ONLY on the user's OK.
 
 ## Open
 - **b12 (built, pushed 2026-11-27, NOT released):** MENU-TREE.md implemented (one page at a time, B back, Start = menu, START badge, black/white pad icons, pulse + select haptics, NeverSleep in play). `tools/menu-check.sh` 18/18 ok on Y700 (adb key events; Unity Android: A=JoystickButton0, B=1, Start=10).
