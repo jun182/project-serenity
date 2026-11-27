@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Walk the menu tree (MENU-TREE.md) with adb key events and check the "MENU page=.. sel=.." log lines. No screenshots.
+# Walk the menu tree (specs/system/menus.md) with adb key events and check the "MENU page=.. sel=.." log lines. No screenshots.
 # Usage: tools/menu-check.sh [apk] [device]   (device default: the first adb device; run `adb connect` first for wireless). Exit 1 on the first mismatch.
 set -u
 APK=${1:-}; S=${2:-$(adb devices | awk 'NR==2{print $1}')}; PKG=se.vibing.serenity

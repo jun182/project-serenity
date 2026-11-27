@@ -1,12 +1,15 @@
 # Changelog: Android port (fork) vs. the original game
 
-Original: NightAnimal333/project-serenity (Windows build). This fork: development on branch `android-port`, releases from `main` (see CONTRIBUTING.md).
+Original: NightAnimal333/project-serenity (Windows build). This fork: feature branches merged into `main`, releases tagged from `main` (see CONTRIBUTING.md). Behaviour is specified in `specs/system/`.
 Builds are numbered b1, b2, ...; the in-game debug overlay shows the build number.
 
 ## Platform
 - Android build (arm64, IL2CPP), built headless with `Assets/Editor/BuildAndroid.cs`. 32-bit dropped (modern phones are 64-bit only).
 - Frame rate setting 30/60/90/120 (Android otherwise caps at 30). Camera zoomed in 1.25x for phone screens.
 - "Quit game" closes the app fully (no reopening from recents).
+
+## Unreleased
+- Process: spec-driven development (`specs/`): constitution, templates, system specs of the current game, `/spec` `/plan` `/tasks` `/verify` commands. Feature branches now merge into `main`; `android-port` retired. MENU-TREE.md moved to `specs/system/menus.md`. No game change.
 
 ## b13 (2026-11-27)
 - Debug is hidden: the Debug panel / UI tweak panel / tuning sliders / invincible / zoom cubes only work after developer mode is unlocked, and developer mode resets on every app start. Unlock: tap the build number in Settings 7 times (hint shows only for the last 2 taps), or the Konami code (up up down down left right left right B A) on the start screen (keyboard or pad). While locked, all tunables use their defaults.
