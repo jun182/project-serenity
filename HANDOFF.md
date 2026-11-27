@@ -4,6 +4,8 @@ Resume: menu rework (b7), user-approved: start screen + one shared menu (details
 ## In flight when the session was cleared
 - b6 built and sent to the Pixel (2026-11-27); source committed (4240cfa).
 - **Gemini review** (agy, gemini-4-neon-high) was running, writing to `/tmp/claude-1000/-home-johola-Desktop--claude-projects/44d0b20f-4eab-4121-9580-c54628560ab7/scratchpad/review/gemini.md` (brief: `task.md`).
+  If gemini.md is missing/empty/cut off (session was cleared mid-run): copy src+task.md from `../project-serenity-review/` setup
+  (src = Assets/Scripts/*.cs, Assets/*.cs, Assets/Editor/*.cs), and rerun per `~/april-claudia/playbooks/delegation.md` (agy needs `--settings` read allow).
   Codex review is copied to `../project-serenity-review/codex.md`. Copy gemini.md there too. Then write `REVIEW.md` in the repo:
   verified findings (check each against the code) + feature ideas from both, for the user. Codex findings already fixed in b6:
   null pause panel on start screen, double timeInLight, blocker overlap count, FindObjectOfType per frame, hit log spam, spawnMaxX cap 5.
