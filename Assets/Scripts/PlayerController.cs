@@ -158,10 +158,7 @@ public class PlayerController : MonoBehaviour
         }
 
     }
-    else
-    {
-        timeInLight = 0;
-    }
+    if (healing) timeInLight = 0; // only reset on the serenity side (was every frame in the light: the plain-track timer never ran)
 
 
 

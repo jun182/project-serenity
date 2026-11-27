@@ -58,6 +58,9 @@ public static class Haptics
         Wave(new long[] { 0, 35 }, new int[] { 0, Mathf.Clamp(amp, 1, 255) });
     }
 
+    // Short light tick for UI touches.
+    public static void Tap() { Wave(new long[] { 0, 30 }, new int[] { 0, 170 }); }
+
     // Soft double-beat "heartbeat" while healing.
     public static void Heartbeat() { Wave(new long[] { 0, 30, 110, 22 }, new int[] { 0, 90, 0, 60 }); }
 

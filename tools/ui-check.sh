@@ -4,7 +4,7 @@
 # Taps are blind (no UI inspection), so look at the sheet; if a screen is off, the step list below is the place to fix.
 set -u
 APK=${1:-}; S=${2:-100.64.3.98:5555}; PKG=se.vibing.serenity
-OUT=${OUT:-$(mktemp -d)}; n=0
+OUT=${OUT:-$(mktemp -d)}; mkdir -p "$OUT"; n=0
 adb connect "$S" >/dev/null 2>&1
 adb -s "$S" get-state >/dev/null 2>&1 || { echo "device $S not reachable"; exit 1; }
 [ -n "$APK" ] && { adb -s "$S" install -r "$APK" | tail -1; }
@@ -16,8 +16,8 @@ shot menu
 tap 2142 90;  shot howto;      tap 1200 980            # How to play, Close
 tap 2142 992; shot mode2;      tap 2142 992            # Mode toggle (once, then back)
 tap 257 992;  shot tilt-off;   tap 257 992             # Tilt toggle (once, then back)
-tap 1200 756 5; shot game                              # Play
+adb -s "$S" shell input tap 1200 756; sleep 0.3; shot ripple; sleep 6; shot game   # touch anywhere starts; ripple shot taken 0.3 s after
 tap 100 100;  shot pause                               # II = pause menu
 echo "$OUT"; ls "$OUT"
 # contact sheet: 3 columns
-ffmpeg -loglevel error -y -pattern_type glob -i "$OUT/[0-9]*.png" -vf "scale=800:-1,tile=3x2" -frames:v 1 "$OUT/sheet.png" && echo "$OUT/sheet.png"
+ffmpeg -loglevel error -y -pattern_type glob -i "$OUT/[0-9]*.png" -vf "scale=800:-1,tile=3x3" -frames:v 1 "$OUT/sheet.png" && echo "$OUT/sheet.png"

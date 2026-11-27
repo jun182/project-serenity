@@ -2,6 +2,6 @@
 // and compared with the GitHub release tags (alpha-bN) by Updater. Bump it for every release.
 public static class BuildInfo
 {
-    public const int Number = 9;
+    public const int Number = 10;
     public static string Label { get { return "b" + Number; } }
 }

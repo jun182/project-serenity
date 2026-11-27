@@ -106,10 +106,11 @@ public class PauseMenu : MonoBehaviour
                 .GetComponentInChildren<Text>().fontSize = 36;
             BuildHelpPanel(canvasGo.transform);
             // Update button (top-left, hidden until Updater finds a newer release).
-            var ub = MakeButton(canvasGo.transform, "", new Vector2(0, 1), new Vector2(330, -80), new Vector2(600, 90), () => { });
+            var ub = MakeButton(canvasGo.transform, "", new Vector2(0, 1), new Vector2(580, -80), new Vector2(600, 90), () => { });
             ub.GetComponentInChildren<Text>().fontSize = 36;
             gameObject.AddComponent<Updater>().Init(ub, ub.GetComponentInChildren<Text>());
             RefreshLabels();
+            gameObject.AddComponent<StartScreen>().Init(canvasGo.transform, MakeButton);
             return;
         }
 
@@ -167,7 +168,7 @@ public class PauseMenu : MonoBehaviour
         frt.anchoredPosition = new Vector2(-30, -20); frt.sizeDelta = new Vector2(1100, 420);
         fpsCounter = fgo.GetComponent<Text>();
         fpsCounter.alignment = TextAnchor.UpperRight; fpsCounter.fontSize = 34; fpsCounter.color = Color.yellow;
-        fpsCounter.font = UiFont.Get();
+        fpsCounter.font = UiFont.Get(); fpsCounter.raycastTarget = false; // don't swallow steering touches
         panel.SetActive(false);
         RefreshLabels();
     }
@@ -217,6 +218,15 @@ public class PauseMenu : MonoBehaviour
                 fpsCounter.text = Mathf.RoundToInt(fpsFrames / fpsAccum) + " fps" + diag;
                 fpsAccum = 0f; fpsFrames = 0;
             }
+        }
+        if (panel == null)
+        {
+            // Start screen: Android Back / Esc closes the help page first, then quits.
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                if (helpPanel != null && helpPanel.activeSelf) helpPanel.SetActive(false); else QuitApp();
+            }
+            return;
         }
         if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.JoystickButton7))
         {
