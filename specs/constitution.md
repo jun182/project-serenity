@@ -15,4 +15,5 @@ Rules every spec, plan and change must respect. Changing one of these needs its 
 6. **Every input works.** Menus and gameplay must work with touch, a gamepad (A/B/Start, stick/d-pad) and a keyboard. Pad focus never
    lands on touch-only buttons. One menu page is visible at a time; B goes back exactly one level.
 7. **The look.** Black and white: the white side (noise, obstacles) and the black side (Serenity, healing). New UI follows it.
-8. **Specs first.** Non-trivial work has an approved spec before code, and `system/` is updated before the branch is merged.
+8. **Specs first, every time.** Every change, including trivial fixes and docs edits, has a folder in `features/` with an approved
+   spec before work starts, and `system/` is updated before the branch is merged.

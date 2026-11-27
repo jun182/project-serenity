@@ -4,6 +4,8 @@ argument-hint: <NNN or folder name>
 ---
 Feature: $ARGUMENTS (folder in `specs/features/`).
 
+0. Check that every change on the branch (`git diff --stat main`) is covered by this feature's scope or by another feature folder
+   on the branch. If something is not, stop and ask: it needs its own spec.
 1. Build if code changed (`specs/system/build-test-release.md`), check for `error CS`.
 2. Check every acceptance criterion with the method in its Check column. Write the result in the table: pass, fail, or
    not tested + why (e.g. needs a real gamepad). Never mark pass without having checked it.

@@ -1,12 +1,13 @@
 # Spec-driven development (SDD)
 
-Every non-trivial change is written down and agreed **before** it is built. The specs live here, in the repo, next to the code.
+**Every change** is written down and agreed **before** it is built, and leaves a trail in `features/`: code, scenes, assets,
+build settings, tools and docs, including trivial fixes. There are no exceptions. The specs live here, in the repo, next to the code.
 
 ```
 specs/
   README.md          this file: the process
   constitution.md    rules no change may break
-  _templates/        spec.md, plan.md, tasks.md to copy
+  _templates/        spec.md, plan.md, tasks.md, small-change.md to copy
   system/            how the game works TODAY (the source of truth for current behaviour)
   features/
     NNN-short-name/  one folder per change: spec.md, plan.md, tasks.md
@@ -19,7 +20,8 @@ specs/
    (start screen, game), edge cases (paused, dead, won, offline, setting already on), defaults and whether it is remembered
    (PlayerPrefs) or per session, what is explicitly out of scope, and how we will know it works (which check, which device).
    Ask in rounds; don't guess an answer the developer has not given. Unanswered points go into the spec as open questions.
-3. **Spec.** Create `features/NNN-short-name/spec.md` from the template (next free number, three digits). It says *what* and *why*,
+3. **Spec.** Create `features/NNN-short-name/spec.md` from the template (next free number, three digits; features and fixes share
+   one sequence). It says *what* and *why*,
    never *how*: problem, goal, scope, out of scope, acceptance criteria. Status `draft`.
 4. **Approve.** The developer who asked (or the project owner) reads the spec and accepts the acceptance criteria. Status `approved`,
    with date and name. No code before this.
@@ -43,10 +45,14 @@ Each criterion is one observable behaviour plus how it is checked. The checks av
 - `device`: by hand on a real phone (needed for tilt/gyro, real gamepad, haptics, sound); name the phone
 - `review`: reading the code or docs
 
-## When a spec can be skipped
-Typo and comment fixes, docs-only edits, a one-line bug fix with an obvious cause that changes no intended behaviour,
-and build/tooling changes that players never see. Still update `system/` and `CHANGELOG.md` if behaviour changed.
-When in doubt, write a short spec: it can be ten lines.
+## Small changes
+Nothing skips the workflow, but small changes (a typo, a comment, a docs edit, a one-line fix, a tooling tweak) take a short path:
+- one `spec.md` from `_templates/small-change.md`: problem, change, acceptance criteria with results; `plan.md` and `tasks.md` are optional.
+- clarify and approve in one quick exchange ("fix X like this, checked by Y: OK?").
+- branch `fix/<name>`, verify, update `system/` if behaviour changed, `CHANGELOG.md`, merge.
+
+A change found while working on another feature gets its own folder, unless it is inside that feature's scope.
+Updates to `HANDOFF.md` and `CHANGELOG.md` belong to the feature they describe and are committed with it.
 
 ## Claude Code commands
 `/spec <idea>` (clarify + write the spec), `/plan <NNN>`, `/tasks <NNN>`, `/verify <NNN>` (check criteria, update system specs).
