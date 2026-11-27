@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 // Input-adaptive start screen (spawned by PauseMenu on MainMenu). Follows the last-used input:
-//  touch mode:      "Touch to start", water ripple + vibration where the finger lands, small Exit top-left.
+//  touch mode:      Play button (Space also starts on PC/Web), water ripple + vibration where the finger lands, small Exit top-left.
 //  controller mode: Play / Exit buttons, stick or d-pad moves the highlight, A or Start confirms.
 // The scene's own Play/Exit buttons are hidden; this replaces them.
 public class StartScreen : MonoBehaviour
@@ -25,7 +25,6 @@ public class StartScreen : MonoBehaviour
     Button play, exit, touchExit;
     Button[] items;
     int idx;
-    GameObject hint; Text[] hintTexts; Outline[] hintOutlines;
     GameObject iconA;
     Sprite ring;
     float loadAt = -1f, prevY;
@@ -58,32 +57,6 @@ public class StartScreen : MonoBehaviour
         touchExit = make(canvas, "Exit", new Vector2(0, 1), new Vector2(130, -80), new Vector2(220, 90), PauseMenu.QuitApp);
         touchExit.GetComponentInChildren<Text>().fontSize = 36;
 
-        // Touch hint, bottom centre, pulsing. Same trick as the timer: two copies, each clipped to its half of the
-        // white/black split: black text + white outline on the white half, white text + black outline on the black half.
-        hint = new GameObject("TouchHint", typeof(RectTransform));
-        hint.transform.SetParent(canvas, false);
-        var hrt = hint.GetComponent<RectTransform>();
-        hrt.anchorMin = Vector2.zero; hrt.anchorMax = Vector2.one; hrt.offsetMin = hrt.offsetMax = Vector2.zero;
-        hintTexts = new Text[2]; hintOutlines = new Outline[2];
-        for (int h = 0; h < 2; h++)
-        {
-            bool left = h == 0;
-            var pgo = new GameObject(left ? "HintLeft" : "HintRight", typeof(RectMask2D));
-            pgo.transform.SetParent(hint.transform, false);
-            var prt = pgo.GetComponent<RectTransform>();
-            prt.anchorMin = new Vector2(left ? 0f : 0.5f, 0f); prt.anchorMax = new Vector2(left ? 0.5f : 1f, 0f);
-            prt.pivot = new Vector2(0.5f, 0f); prt.anchoredPosition = new Vector2(0, 150); prt.sizeDelta = new Vector2(0, 140);
-            var tgo = new GameObject("Text", typeof(Text));
-            tgo.transform.SetParent(pgo.transform, false);
-            var trt = tgo.GetComponent<RectTransform>();
-            trt.anchorMin = trt.anchorMax = new Vector2(left ? 1f : 0f, 0f);
-            trt.pivot = new Vector2(0.5f, 0f); trt.sizeDelta = new Vector2(1400, 140); trt.anchoredPosition = Vector2.zero;
-            var t = tgo.GetComponent<Text>();
-            t.font = UiFont.Get(); t.fontSize = 72; t.alignment = TextAnchor.MiddleCenter; t.raycastTarget = false; t.text = "Touch to start";
-            var o = tgo.AddComponent<Outline>(); o.effectDistance = new Vector2(3, -3);
-            hintTexts[h] = t; hintOutlines[h] = o;
-        }
-
         // Controller icon "A" next to Play: black/white like the rest of the UI (white disc, black letter and outline).
         iconA = PadIcons.Disc(play.transform, "A", new Vector2(0, 0.5f), new Vector2(50, 0), 64);
 
@@ -97,8 +70,9 @@ public class StartScreen : MonoBehaviour
     {
         if (items == null) return;
         bool vis = !PauseMenu.MenuOpen; // only one page visible at a time: hide the start screen while the menu is open
-        play.gameObject.SetActive(Controller && vis); exit.gameObject.SetActive(Controller && vis);
-        touchExit.gameObject.SetActive(!Controller && vis); hint.SetActive(!Controller && vis);
+        play.gameObject.SetActive(vis); exit.gameObject.SetActive(Controller && vis); // Play is a button in both modes (no more "Touch to start")
+        touchExit.gameObject.SetActive(!Controller && vis);
+        if (iconA) iconA.SetActive(Controller);
         Highlight();
     }
 
@@ -110,10 +84,9 @@ public class StartScreen : MonoBehaviour
 
     void OnTouch(Vector2 pos)
     {
-        if (Controller || loadAt > 0f) return;
+        if (Controller || loadAt > 0f) return; // a tap anywhere only ripples; the Play button starts the game
         Haptics.Tap();
         for (int i = 0; i < 3; i++) StartCoroutine(Ripple(pos, i * 0.14f));
-        loadAt = Time.unscaledTime + 0.55f;
     }
 
     IEnumerator Ripple(Vector2 screen, float delay)
@@ -168,17 +141,7 @@ public class StartScreen : MonoBehaviour
         bool menuChanged = lastMenuOpen != PauseMenu.MenuOpen; // the A that closes the menu must not also press Play
         if (menuChanged) { lastMenuOpen = PauseMenu.MenuOpen; ApplyMode(); }
 
-        if (hint != null && hint.activeSelf)
-        {
-            float a = 0.55f + 0.45f * Mathf.Sin(Time.unscaledTime * 3f);
-            for (int h = 0; h < 2; h++)
-            {
-                Color fill = h == 0 ? Color.black : Color.white, edge = h == 0 ? Color.white : Color.black;
-                fill.a = a; edge.a = a;
-                hintTexts[h].color = fill; hintOutlines[h].effectColor = edge;
-            }
-        }
-
+        if (!Application.isMobilePlatform && !Controller && !PauseMenu.MenuOpen && Input.GetKeyDown(KeyCode.Space)) StartGame();
         if (Controller && !PauseMenu.MenuOpen && !woke && !menuChanged)
         {
             bool down = (y < -0.5f && prevY >= -0.5f) || Input.GetKeyDown(KeyCode.DownArrow);
