@@ -26,6 +26,6 @@ public class MainMenuController : MonoBehaviour
     public void onClickExit()
     {
         Debug.Log("goodbye");
-        Application.Quit();
+        PauseMenu.QuitApp();
     }
 }

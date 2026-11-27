@@ -1,0 +1,21 @@
+# Backlog (Android port fork)
+
+- **Controller support** (not started): left stick left/right moves the player (same as A/D and touch); Start button opens the pause menu.
+  Input is currently the old Input Manager (`Input.GetKey` in `Assets/Scripts/PlayerController.cs`, `DebugPanelController.cs`), so the stick can use `Input.GetAxis("Horizontal")`; check that a pause menu exists first (not verified).
+- **Gyro tilt toggle** (not started): optional setting that uses phone tilt (device accelerometer/gyro) as left/right movement instead of touch.
+  Decided: a button in the main menu, and also in the pause menu if possible (a pause menu does not exist yet: see controller item). Needs: an on/off toggle (remembered with PlayerPrefs), a dead zone and sensitivity, and a check on a real phone. `Input.acceleration.x` works with the old Input Manager. Not tested.
+- **"Built for an older version of Android" install warning** (not started, low priority): the target SDK is too low (min SDK 22). Fix: raise `PlayerSettings.Android.targetSdkVersion` in `Assets/Editor/BuildAndroid.cs`; first check which API level the Unity 2022.2.8f1 Android modules support (bundled SDK/Gradle may cap it). Not tested.
+- **Tilt recentre ("ratchet") button** (not started): a button (pause menu, maybe also on screen) that sets the current phone tilt as the new neutral position, for when the player sits or holds the phone at an angle. Store the offset (in memory, or PlayerPrefs) and subtract it from the tilt in `GyroSettings.Steer()` (`Assets/Scripts/PauseMenu.cs`). Needs real-phone testing: note the neutral is currently flat/level.
+- **Haptics + screen shake on hit/heal** (not started): short vibration when the player hits an obstacle and loses health (`PlayerController.OnTriggerEnter`, Obstacle branch), plus a slight camera shake; and a very light heartbeat-like pulse while healing in Serenity (`healing` branch). Android: `Handheld.Vibrate()` is fixed-length and crude; for short/soft pulses use the Android Vibrator API with amplitude (VibrationEffect) via `AndroidJavaObject`, needs the VIBRATE permission. Not tested.
+- **Real health display** (bar added in b4, untested; numeric text still unused): the scene's "Balance" text showed a static "999%" (never updated; hidden 2026-11-27). `HealthUI.UpdateHealthText` exists but nothing calls it.
+
+## Input-adaptive start menu / menus (user request 2026-11-27; do AFTER the updater is confirmed working)
+- General design pattern for ALL menus: UI follows the last-used input, switching dynamically (controller input detected -> controller mode; touch detected -> touch mode).
+- **Controller mode:** Play and Exit buttons visible; stick/d-pad moves the selection (highlight), A or Start confirms. Reserve space for controller button icons
+  (user adds the art later; use a placeholder icon for now).
+- **Touch mode (no controller):** start screen says "Touch to start"; visual feedback where the finger lands (water-droplet ripple waves) + vibration on touch
+  (reuse `Haptics`). Exit = normal small button at top-left (platform convention). Android Back on start screen = quit (already decided).
+- Fits the b8 menu rework (HANDOFF "Next 2"): one shared menu, start screen without buttons in touch mode.
+
+## Debug menu: game speed slider (user request 2026-11-27)
+- Slider in the debug tools (Time.timeScale, e.g. 0.5x-5x, default 1x) to fast-forward through difficulty levels/win while testing. Reset to 1x on leaving debug/quit to menu.

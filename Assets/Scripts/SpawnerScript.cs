@@ -1,49 +1,39 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SpawnerScript : MonoBehaviour
 {
     [SerializeField]
-    private GameObject spawner; 
-
+    private GameObject spawner;
     [SerializeField]
     private GameObject obstacle;
-
     [SerializeField]
-    private float timeBetweenSpawns;
-
+    private float timeBetweenSpawns; // scene: 0.15 s = the original rate (difficulty level 2)
     [SerializeField]
-    private float chanceToSpawnInMiddle;
+    private float chanceToSpawnInMiddle; // unused: it was 0 in the scene, so x 2..5 never got obstacles
 
     private float timer;
 
-    // Start is called before the first frame update
     void Start()
     {
         timer = 0f;
     }
 
-    // Update is called once per frame
     void Update()
     {
+        var gd = GameDirector.Instance;
+        if (gd != null && gd.SpawningStopped) return;
+        float mult = gd != null ? gd.RateMultiplier : 1f;
+        if (mult <= 0f) return;
+        float interval = timeBetweenSpawns / mult;
         timer += Time.deltaTime;
-        if (timer >= timeBetweenSpawns){
-
-            timer = 0;
-
-            // Some trickery to make the obstacles spawn more frequently closer to the divide line.
-            float temp = Random.Range(0f, 10f);
-            float randomXCoordinate;
-            if (temp > chanceToSpawnInMiddle)
-            {
-                randomXCoordinate = (Random.Range(-5f, 2f));
-            } else {
-                randomXCoordinate = (Random.Range(2f, 5f));
-            }
-
-            Instantiate(obstacle, new Vector3(randomXCoordinate, spawner.transform.position.y, spawner.transform.position.z), Quaternion.identity);
-
+        // Loop (not reset to 0) so high rates aren't capped by the frame rate.
+        while (timer >= interval)
+        {
+            timer -= interval;
+            // Uniform over the whole left side up to the border (x=5); beyond 5, HideObjectsPerSide fades them out (invisible hits).
+            float x = Random.Range(-5f, GameSettings.Get("spawnMaxX"));
+            Instantiate(obstacle, new Vector3(x, spawner.transform.position.y, spawner.transform.position.z), Quaternion.identity);
+            if (gd != null) gd.Spawned++;
         }
     }
 }
