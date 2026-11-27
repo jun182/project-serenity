@@ -1,6 +1,6 @@
 # 002 Every change goes through the workflow
 
-- **Status:** verified
+- **Status:** done
 - **Source:** request from NightAnimal333 (chat, 2026-11-27)
 - **Approved:** 2026-11-27, NightAnimal333 (chat)
 - **Branch:** `feature/every-change-documented`
