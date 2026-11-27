@@ -61,6 +61,9 @@ public static class Haptics
     // Short light tick for UI touches.
     public static void Tap() { Wave(new long[] { 0, 30 }, new int[] { 0, 170 }); }
 
+    // Very light tick when the pad selection moves.
+    public static void Select() { Wave(new long[] { 0, 12 }, new int[] { 0, 70 }); }
+
     // Soft double-beat "heartbeat" while healing.
     public static void Heartbeat() { Wave(new long[] { 0, 30, 110, 22 }, new int[] { 0, 90, 0, 60 }); }
 

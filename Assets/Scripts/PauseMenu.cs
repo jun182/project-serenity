@@ -102,7 +102,7 @@ public class PauseMenu : MonoBehaviour
             menuBtn = MakeButton(canvasGo.transform, "Menu", new Vector2(1, 1), new Vector2(-170, -80), new Vector2(280, 90), OpenMenu);
             menuBtn.GetComponentInChildren<Text>().fontSize = 36;
             TouchOnly(menuBtn);
-            startBadge = PadIcons.Pill(menuBtn.transform, "START", new Vector2(0.5f, 0), new Vector2(0, -34), new Vector2(150, 44), 28);
+            startBadge = PadIcons.Pill(menuBtn.transform, "START", new Vector2(0, 0.5f), new Vector2(-95, 0), new Vector2(150, 44), 28);
             // Update button (top-left next to Exit, hidden until Updater finds a newer release).
             var ub = MakeButton(canvasGo.transform, "", new Vector2(0, 1), new Vector2(580, -80), new Vector2(600, 90), () => { });
             ub.GetComponentInChildren<Text>().fontSize = 36;
@@ -133,7 +133,7 @@ public class PauseMenu : MonoBehaviour
         // Pause button, top-left.
         menuBtn = MakeButton(canvasGo.transform, "II", new Vector2(0, 1), new Vector2(90, -90), new Vector2(120, 120), OpenMenu);
         TouchOnly(menuBtn);
-        startBadge = PadIcons.Pill(menuBtn.transform, "START", new Vector2(0.5f, 0), new Vector2(0, -34), new Vector2(150, 44), 28);
+        startBadge = PadIcons.Pill(menuBtn.transform, "START", new Vector2(1, 0.5f), new Vector2(95, 0), new Vector2(150, 44), 28); // II sits at the left screen edge: no room on its left
         BuildMenu(canvasGo.transform);
         BuildTuningPanel(canvasGo.transform);
         BuildHelpPanel(canvasGo.transform);

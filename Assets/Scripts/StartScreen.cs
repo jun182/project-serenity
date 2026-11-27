@@ -181,12 +181,13 @@ public class StartScreen : MonoBehaviour
         {
             bool down = (y < -0.5f && prevY >= -0.5f) || Input.GetKeyDown(KeyCode.DownArrow);
             bool up = (y > 0.5f && prevY <= 0.5f) || Input.GetKeyDown(KeyCode.UpArrow);
-            if (down) { idx = (idx + 1) % items.Length; Highlight(); }
-            else if (up) { idx = (idx + items.Length - 1) % items.Length; Highlight(); }
+            if (down) { idx = (idx + 1) % items.Length; Highlight(); Haptics.Select(); }
+            else if (up) { idx = (idx + items.Length - 1) % items.Length; Highlight(); Haptics.Select(); }
             // A / Enter confirms. Start opens the menu (PauseMenu), it no longer starts the game.
             if (Input.GetKeyDown(KeyCode.JoystickButton0) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
                 items[idx].onClick.Invoke();
         }
+        for (int i = 0; i < items.Length; i++) items[i].transform.localScale = Vector3.one * ((Controller && i == idx) ? PadIcons.Pulse() : 1f);
         prevY = y;
 
         if (loadAt > 0f && Time.unscaledTime >= loadAt) { loadAt = -1f; StartGame(); }

@@ -80,12 +80,17 @@ public static class PadIcons
         return false;
     }
 
+    public static float Pulse() { return 1f + 0.03f * Mathf.Sin(Time.unscaledTime * 6f); }
+
     // Highlight for any selectable (menu buttons, sliders) while a pad is in use.
     public class SelectFx : MonoBehaviour, ISelectHandler, IDeselectHandler
     {
         public Image target; public Color normal; public Color selected = Color.white;
-        public void OnSelect(BaseEventData e) { Paint(true); }
-        public void OnDeselect(BaseEventData e) { Paint(false); }
+        bool on;
+        public void OnSelect(BaseEventData e) { on = PauseMenu.PadActive; Paint(true); if (on) Haptics.Select(); }
+        public void OnDeselect(BaseEventData e) { on = false; transform.localScale = Vector3.one; Paint(false); }
+        // Selected buttons pulse slightly (sliders only change colour). Unscaled time: the game is paused in menus.
+        void Update() { if (on && GetComponent<Button>() != null) transform.localScale = Vector3.one * Pulse(); }
         void Paint(bool on)
         {
             if (target == null) return;
