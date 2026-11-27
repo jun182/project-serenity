@@ -4,7 +4,7 @@ Status key: open / in progress / done / parked. Dates are 2026-11-27 unless stat
 
 ## Open
 Tracked on GitHub now (issues enabled on jun182/project-serenity, 2026-11-27): https://github.com/jun182/project-serenity/issues
-- gh #1 cache per-frame PlayerPrefs reads, #2 Material leak in HideObjectsPerSide, #3 dead player still moves/heals: assigned to Copilot (review claims, unverified; PRs against main).
+- gh #1 cache per-frame PlayerPrefs reads, #2 Material leak in HideObjectsPerSide, #3 dead player still moves/heals: assigned to Copilot (review claims, unverified; PRs against android-port).
 - gh #4 controller: test b11 menu navigation with a pad (needs a human). Old #5.
 - gh #5 frame rate 90 shows ~80 fps (needs device). Old #7.
 - Needs phone confirmation: music leaves the serene track on the left side (old #9), cannot die (old #8, believed fixed in code), pause menu / tilt (old #3/#4, built).

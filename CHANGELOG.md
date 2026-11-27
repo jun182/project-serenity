@@ -1,6 +1,6 @@
 # Changelog: Android port (fork) vs. the original game
 
-Original: NightAnimal333/project-serenity (Windows build). This fork: branch `main` (the old `android-port` branch was merged into main on 2026-11-27).
+Original: NightAnimal333/project-serenity (Windows build). This fork: development on branch `android-port`, releases from `main` (see CONTRIBUTING.md).
 Builds are numbered b1, b2, ...; the in-game debug overlay shows the build number.
 
 ## Platform

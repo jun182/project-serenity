@@ -1,5 +1,5 @@
 # Board project-serenity (2026-11-27)
-Resume: print open issues (`gh issue list -R jun182/project-serenity`). b13 (b12 + hidden developer mode) is on main; b12 is installed on the Y700 (adb 192.168.18.155:42501, reconnect with `adb connect`); user tests it. Release alpha-b13 (includes b12) ONLY on the user's OK. Workflow: CONTRIBUTING.md (main = release, feature branches). Agent instructions: CLAUDE.md.
+Resume: print open issues (`gh issue list -R jun182/project-serenity`). b13 (b12 + hidden developer mode) is on android-port and main; b12 is installed on the Y700 (adb 192.168.18.155:42501, reconnect with `adb connect`); user tests it. Release alpha-b13 (includes b12) ONLY on the user's OK. Workflow: CONTRIBUTING.md (android-port = dev, main = release). Agent instructions: CLAUDE.md.
 
 ## Open
 - **b13 (built 2026-11-27, NOT released):** developer mode hidden + session-only (7 taps on build number / Konami). `tools/menu-check.sh` all ok on the Nord 2T (pad via adb keys). Real pad d-pad Konami not tested. UI tweak panel now needs the dev unlock (not "Debug ON").

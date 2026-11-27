@@ -22,5 +22,3 @@
 
 ## Pixel 9 Pro XL wireless adb + fresh install (parked 2026-11-27, user: not relevant to the game)
 - Over USB it shows only as MTP (18d1:4ee1): needs USB debugging authorised / Wireless debugging on the same Wi-Fi before adb can see it. b11/b12 not installed there.
-
-- **Branch split: `dev` + pure `release`** (idea 2026-11-27, not decided): today `main` is the release branch and work happens on feature branches. Option: feature branches merge into a `dev` branch, and `main` only receives tested releases. Revisit when more than one person is merging regularly.
