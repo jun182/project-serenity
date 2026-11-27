@@ -1,5 +1,5 @@
 # Board project-serenity (2026-11-27)
-Resume order: (0) tester install failure (below), (1) ask the user for b7 test results, (2) tick off open issues + write REVIEW.md, (3) menu rework (b8).
+Resume order: (1) ask the user for b7 test results, (2) tick off open issues + write REVIEW.md, (3) menu rework (b8).
 
 ## State
 - b5/b6 features tested OK by the user on the Pixel (modes, difficulty, win, shake, near miss, help, debug page).
@@ -10,18 +10,13 @@ Resume order: (0) tester install failure (below), (1) ask the user for b7 test r
   - Near-miss vibration strong enough (slider 0-255, default 160)? Slide too subtle/strong (default 0.35), right direction
     (negative = flip)? Slide + near-miss shake are off when Screen shake is OFF; vibration is not.
   - Do the tuning page (3 columns) and the per-slider Default buttons fit/work on the Pixel? Labels auto-shrink (best fit).
-- **Tester install failure (2026-11-27):** a tester got "Can't install app / There's a problem with the app file" on b7.
-  Checked: APK intact, v1+v2 signed (Android debug key, same as b6), sha256 `3f0d5e1b…fde8af`. b7 installed + launched
-  to the main menu on the Y700 (Android 16, arm64, via wireless adb; still installed there; Play not pressed).
-  Tester's phone = **Pixel 8** (arm64), so the ABI theory is out. Oddity: b7 has a 13 MB zero-filled gap inside the zip
-  (Gradle incremental packaging), harmless as far as tested. Native libs are deflated (extractNativeLibs), so 16 KB page
-  alignment shouldn't block install (not tested on a 16 KB device).
-  Rebuilt same code → `project-serenity-b7-rebuild1.apk` (sha256 `f1ce87e0…33cea0`), installs on the Y700; published as
-  pre-release `alpha-b7-rebuild1` on jun182/project-serenity (fork; note `gh` defaults to upstream NightAnimal333, always pass `-R`).
-  Link: https://github.com/jun182/project-serenity/releases/download/alpha-b7-rebuild1/project-serenity-b7-rebuild1.apk
-  Unknown: whether the tester has tried the GitHub link yet. Next: get their Android version, how they open the file
-  (chat app preview vs Files app), their file's hash, an existing app with the same package from another key (uninstall first),
-  and ideally `adb install` output (exact error code). The user's Pixel 9 Pro XL can serve as a Pixel test device.
+- **Tester install failure (2026-11-27): CLOSED, tester's side.** Pixel 8 tester got "problem with the app file" on b7; with
+  `alpha-b7-rebuild1` (GitHub pre-release on jun182/project-serenity, always pass `-R`) it worked; they don't know what changed.
+  Not reproduced: b7-rebuild1 (hash verified vs GitHub download) installs + launches on the Y700 (Android 16) and the Nord 2T
+  (Android 14, arm64). Menu/gameplay untested on the Nord 2T. All builds share one debug key (CN=Android Debug, made on this laptop);
+  a build from another machine would need uninstall first. Testers are told to open GitHub issues for problems.
+- **Nord 2T** (CPH2399, USB serial `INBY4PTGT8NJROFY`): wireless adb via `adb tcpip 5555` over USB, then
+  `adb connect 100.64.3.98:5555` (Tailscale `johola2t`). Lasts until reboot.
 
 ## Next 1: tick off open issues
 - ISSUES.md is stale: #1-#4, #8, #9 look resolved by user tests (install, touch, pause, tilt, death, music): confirm with the user, move to Done.
