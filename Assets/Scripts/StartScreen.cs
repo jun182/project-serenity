@@ -182,7 +182,7 @@ public class StartScreen : MonoBehaviour
             }
         }
 
-        if (Controller)
+        if (Controller && !PauseMenu.MenuOpen)
         {
             if (y < -0.5f && prevY >= -0.5f) { idx = (idx + 1) % items.Length; Highlight(); }
             else if (y > 0.5f && prevY <= 0.5f) { idx = (idx + items.Length - 1) % items.Length; Highlight(); }
