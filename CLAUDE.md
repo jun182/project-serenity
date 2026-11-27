@@ -3,11 +3,11 @@
 Unity 2022.2.8f1 game (2D-ish dodger, white side vs black "Serenity" side). This repo is the Android fork (`jun182/project-serenity`) of the original Windows game; read `README.md`, `specs/README.md` (workflow), `specs/constitution.md`, `specs/system/` (how the game works today), `HANDOFF.md` (current state) and `CONTRIBUTING.md` (branches) first.
 
 ## Workflow: spec-driven development
-- Non-trivial work goes through `specs/README.md`: idea -> clarify -> spec -> approval -> plan -> tasks -> implement -> verify -> update `specs/system/`. Commands: `/spec`, `/plan`, `/tasks`, `/verify`.
+- **Every change** goes through `specs/README.md`, including trivial fixes and docs edits: idea -> clarify -> spec -> approval -> plan -> tasks -> implement -> verify -> update `specs/system/`. Every change leaves a folder in `specs/features/NNN-name/`; small changes use `specs/_templates/small-change.md`. Commands: `/spec`, `/plan`, `/tasks`, `/verify`.
 - **When a developer asks for a feature, ask questions first**, many if needed, until the requirement is precise: problem, audience (players / dev mode), every scene and input (touch, tilt, pad, keyboard), edge cases, defaults and persistence, out of scope, and how each acceptance criterion is checked. Don't guess missing answers; record them as open questions.
 - No code before the spec is approved by the developer. If the work outgrows the spec, stop and update the spec.
 - Before merging: every acceptance criterion has a result, `specs/system/` describes the new behaviour, `CHANGELOG.md` and `HANDOFF.md` are updated.
-- What may skip a spec: see `specs/README.md`.
+- Nothing skips the workflow. Something you notice while working on another change gets its own folder (unless it is in that spec's scope); don't fix it silently.
 
 ## Rules
 - Branches: work on a feature branch from `main` (`feature/<name>`, `fix/<name>`) and merge it into `main` when it is ready (verified, system specs updated). No direct commits to `main`. Details in `CONTRIBUTING.md`.

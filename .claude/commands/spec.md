@@ -11,7 +11,9 @@ Follow `specs/README.md` (steps 1-4) for this idea: $ARGUMENTS
    (PlayerPrefs or session-only), what is out of scope, and how each requirement will be checked (menu-check, log, screenshot,
    editor, which device). Point out conflicts with the constitution or with current behaviour. Never fill a gap with a guess;
    if something stays unanswered, put it under Open questions.
-3. Pick the next free number in `specs/features/` (three digits) and write `specs/features/NNN-short-name/spec.md` from
-   `specs/_templates/spec.md`, status `draft`. What and why only, no implementation.
+   For a small change (typo, comment, docs edit, one-line fix, tooling tweak) one short round is enough, but still ask.
+3. Pick the next free number in `specs/features/` (three digits, one sequence for features and fixes) and write
+   `specs/features/NNN-short-name/spec.md` from `specs/_templates/spec.md` (small change: `specs/_templates/small-change.md`),
+   status `draft`. What and why only, no implementation. Every change gets a folder; nothing skips this.
 4. Show the acceptance criteria to the developer and ask for approval. Only after they approve: set status `approved` with date and name.
    Do not write code.
