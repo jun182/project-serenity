@@ -9,7 +9,8 @@ Replaces the former `MENU-TREE.md` (b12 design notes, in git history).
 - Pad focus never lands on touch-only buttons (Menu, II, top-left Exit, Update).
 - Opening the menu in game pauses (`Time.timeScale` 0); closing restores the game speed (1, or the debug game speed).
 - Screen stays awake while playing with the menu closed; system sleep timeout on the start screen and while paused.
-- Big buttons use the button style from Settings (Classic / Paint / Rhombus, default Rhombus).
+- Every button, slider and controller icon follows `ui-style.md`: white, black outline, black text; the pad / keyboard
+  selection is black with a white outline and white text.
 
 ## Start screen (`MainMenu`)
 - **Touch mode:** pulsing "Touch to start" at the bottom (black on the white half, white on the black half). A tap anywhere: light
@@ -23,7 +24,7 @@ Replaces the former `MENU-TREE.md` (b12 design notes, in git history).
 main      Close|Resume, Settings, Controls, How to play,
           [game only] Quit to menu, Quit game, [game + Debug panel ON] Debug...
 settings  Frame rate: 30/60/90/120 (cycles), Screen shake: ON/OFF, [start screen only] Mode: Progressive/Endless,
-          Obstacles (Endless mode) slider 0.5-3, Button style: Classic/Paint/Rhombus, Build bN (7 taps = dev mode),
+          Obstacles (Endless mode) slider 0.5-3, Build bN (7 taps = dev mode),
           [dev mode] Developer..., Back -> main
 dev       Debug panel: ON/OFF, UI tweak panel: ON/OFF, Disable developer mode, Back -> settings
 controls  Tilt steering: ON/OFF, Invert tilt: ON/OFF, Back -> main

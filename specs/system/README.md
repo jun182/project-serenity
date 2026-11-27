@@ -11,6 +11,7 @@ These files describe behaviour that exists. A change to behaviour updates them i
 | [gameplay.md](gameplay.md) | sides, health, obstacles, blockers, modes, difficulty, win/death |
 | [controls.md](controls.md) | touch, tilt, gamepad, keyboard; input-mode switching |
 | [menus.md](menus.md) | start screen, shared menu, pages, pad navigation, HUD |
+| [ui-style.md](ui-style.md) | the one look for buttons, sliders, controller icons (colours, outline, states) |
 | [dev-mode.md](dev-mode.md) | unlock, debug panel, debug page, tunables, UI tweak panel |
 | [settings.md](settings.md) | every PlayerPrefs key, default, where it is set |
 | [audio-and-feel.md](audio-and-feel.md) | music tracks, sounds, haptics, camera shake/breathing/tilt |

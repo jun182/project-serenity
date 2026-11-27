@@ -14,6 +14,7 @@ Rules every spec, plan and change must respect. Changing one of these needs its 
    sound need a real device; don't report them as tested otherwise.
 6. **Every input works.** Menus and gameplay must work with touch, a gamepad (A/B/Start, stick/d-pad) and a keyboard. Pad focus never
    lands on touch-only buttons. One menu page is visible at a time; B goes back exactly one level.
-7. **The look.** Black and white: the white side (noise, obstacles) and the black side (Serenity, healing). New UI follows it.
+7. **The look.** Black and white: the white side (noise, obstacles) and the black side (Serenity, healing). New UI follows it and the UI style in `system/ui-style.md`
+   (white buttons, black outline, black text; one style for every button).
 8. **Specs first, every time.** Every change, including trivial fixes and docs edits, has a folder in `features/` with an approved
    spec before work starts, and `system/` is updated before the branch is merged.

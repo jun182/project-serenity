@@ -2,29 +2,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// Controller UI helpers, black/white like the touch UI (start hint, timer): white disc/pill, black letter, black outline.
+// Controller UI helpers in the UI style (specs/system/ui-style.md): white disc / pill, black outline, black letter.
 public static class PadIcons
 {
-    static Sprite disc;
-
-    public static readonly Color Normal = new Color(0.15f, 0.15f, 0.15f, 0.9f), Selected = Color.white;
-
-    static Sprite Disc()
-    {
-        if (disc != null) return disc;
-        const int N = 128;
-        var tex = new Texture2D(N, N, TextureFormat.RGBA32, false);
-        for (int y = 0; y < N; y++)
-            for (int x = 0; x < N; x++)
-            {
-                float d = Vector2.Distance(new Vector2(x, y), new Vector2(N / 2f, N / 2f)) / (N / 2f);
-                tex.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01((1f - d) * 20f)));
-            }
-        tex.Apply();
-        return disc = Sprite.Create(tex, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f));
-    }
-
-    // Black disc with a white letter and white outline (A, B, ...). Placeholder shape until real controller art exists.
+    // White disc with a black outline and a black letter (A, B, ...). Placeholder shape until real controller art exists.
     public static GameObject Disc(Transform parent, string letter, Vector2 anchor, Vector2 pos, float size)
     {
         var go = new GameObject("Icon" + letter, typeof(Image));
@@ -32,13 +13,12 @@ public static class PadIcons
         var rt = go.GetComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = anchor; rt.pivot = new Vector2(0.5f, 0.5f);
         rt.anchoredPosition = pos; rt.sizeDelta = new Vector2(size, size);
-        var img = go.GetComponent<Image>(); img.sprite = Disc(); img.color = Color.black; img.raycastTarget = false;
-        var ol = go.AddComponent<Outline>(); ol.effectColor = Color.white; ol.effectDistance = new Vector2(4, -4); // visible on white (selected) and dark buttons
-        Label(go.transform, letter, (int)(size * 0.62f), Color.white);
+        var img = go.GetComponent<Image>(); img.sprite = UiStyle.Disc(); img.color = Color.white; img.raycastTarget = false;
+        Label(go.transform, letter, (int)(size * 0.62f), UiStyle.Dark);
         return go;
     }
 
-    // Small white pill with black text, e.g. "START" under a touch-only button.
+    // Small white pill with a black outline and black text, e.g. "START" next to a touch-only button.
     public static GameObject Pill(Transform parent, string text, Vector2 anchor, Vector2 pos, Vector2 size, int fontSize)
     {
         var go = new GameObject("Badge" + text, typeof(Image));
@@ -46,8 +26,8 @@ public static class PadIcons
         var rt = go.GetComponent<RectTransform>();
         rt.anchorMin = rt.anchorMax = anchor; rt.pivot = new Vector2(0.5f, 0.5f);
         rt.anchoredPosition = pos; rt.sizeDelta = size;
-        var img = go.GetComponent<Image>(); img.color = Color.white; img.raycastTarget = false;
-        Label(go.transform, text, fontSize, Color.black);
+        var img = go.GetComponent<Image>(); img.sprite = UiStyle.ButtonSprite(false); img.type = Image.Type.Sliced; img.color = Color.white; img.raycastTarget = false;
+        Label(go.transform, text, fontSize, UiStyle.Dark);
         return go;
     }
 
@@ -61,14 +41,8 @@ public static class PadIcons
         t.font = UiFont.Get(); t.fontSize = fontSize; t.text = text; t.alignment = TextAnchor.MiddleCenter; t.color = col; t.raycastTarget = false;
     }
 
-    // Selected button: white with black text; otherwise dark with white text.
-    public static void Paint(Button b, bool selected)
-    {
-        var img = b.GetComponent<Image>();
-        img.color = selected ? Selected : Normal;
-        var t = b.GetComponentInChildren<Text>();
-        if (t != null) t.color = selected ? Color.black : Color.white;
-    }
+    // Selected button: black with white outline and text; otherwise white with black outline and text.
+    public static void Paint(Button b, bool selected) { UiStyle.Select(b, selected); }
 
     // True on any controller / keyboard-nav input this frame (not Escape: that is also Android Back).
     public static bool AnyPadInput()
@@ -82,36 +56,31 @@ public static class PadIcons
 
     public static float Pulse() { return 1f + GameSettings.Get("uiPulse") * 0.01f * Mathf.Sin(Time.unscaledTime * 6f); }
 
-    // Highlight for any selectable (menu buttons, sliders) while a pad is in use.
+    // Highlight for any selectable (menu buttons, sliders) while a pad is in use: buttons invert and pulse,
+    // sliders get a thicker track outline and a pulsing handle.
     public class SelectFx : MonoBehaviour, ISelectHandler, IDeselectHandler
     {
-        public Image target; public Color normal; public Color selected = Color.white;
         bool on;
-        public void OnSelect(BaseEventData e) { on = PauseMenu.PadActive; Paint(true); if (on) Haptics.Select(); }
-        public void OnDeselect(BaseEventData e) { on = false; transform.localScale = Vector3.one; Paint(false); }
-        // Selected buttons pulse slightly (sliders only change colour). Unscaled time: the game is paused in menus.
-        void Update() { if (on && GetComponent<Button>() != null) transform.localScale = Vector3.one * Pulse(); }
-        void Paint(bool on)
+        public void OnSelect(BaseEventData e) { on = PauseMenu.PadActive; Paint(on); if (on) Haptics.Select(); }
+        public void OnDeselect(BaseEventData e) { on = false; Scale(1f); Paint(false); }
+        // Closing the menu hides the page before the selection is cleared, and hidden objects get no OnDeselect:
+        // reset here, or the last selected button stays black the next time the page opens.
+        void OnDisable() { on = false; Scale(1f); Paint(false); }
+        // Unscaled time: the game is paused in menus.
+        void Update() { if (on) Scale(Pulse()); }
+        void Scale(float k)
         {
-            if (target == null) return;
-            if (on && !PauseMenu.PadActive) return;
-            target.color = on ? selected : normal;
-            var b = GetComponent<Button>();
-            if (b != null) { var t = b.GetComponentInChildren<Text>(); if (t != null) t.color = on ? Color.black : Color.white; }
+            var s = GetComponent<Slider>();
+            if (s != null) { if (s.handleRect != null) s.handleRect.localScale = Vector3.one * k; }
+            else transform.localScale = Vector3.one * k;
+        }
+        void Paint(bool v)
+        {
+            var b = GetComponent<Button>(); if (b != null) UiStyle.Select(b, v);
+            var s = GetComponent<Slider>(); if (s != null) UiStyle.SelectSlider(s, v);
         }
     }
 
-    public static void AddFx(Button b)
-    {
-        var fx = b.gameObject.AddComponent<SelectFx>();
-        fx.target = b.GetComponent<Image>(); fx.normal = Normal; fx.selected = Selected;
-    }
-
-    public static void AddFx(Slider s)
-    {
-        var bg = s.transform.Find("Background");
-        if (bg == null) return;
-        var fx = s.gameObject.AddComponent<SelectFx>();
-        fx.target = bg.GetComponent<Image>(); fx.normal = new Color(0.3f, 0.3f, 0.3f); fx.selected = new Color(0.75f, 0.75f, 0.75f);
-    }
+    public static void AddFx(Button b) { b.gameObject.AddComponent<SelectFx>(); }
+    public static void AddFx(Slider s) { s.gameObject.AddComponent<SelectFx>(); }
 }
