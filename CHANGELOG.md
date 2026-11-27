@@ -11,6 +11,7 @@ Builds are numbered b1, b2, ...; the in-game debug overlay shows the build numbe
 ## b13 (2026-11-27)
 - Debug is hidden: the Debug panel / UI tweak panel / tuning sliders / invincible / zoom cubes only work after developer mode is unlocked, and developer mode resets on every app start. Unlock: tap the build number in Settings 7 times (hint shows only for the last 2 taps), or the Konami code (up up down down left right left right B A) on the start screen (keyboard or pad). While locked, all tunables use their defaults.
 - Settings: "Build bN" line; "Developer..." page (Debug panel, UI tweak panel, Disable developer mode) appears after unlock.
+- Cached per-frame PlayerPrefs reads (gyro on/invert, screen shake, mode, debug flag): reimplemented from Copilot PR #6 on top of the dev-mode gate. Dead player no longer moves or heals during the fade-out (from PR #8, not runtime-tested). Material leak fix in HideObjectsPerSide (PR #7).
 - `tools/menu-check.sh` also checks locked by default, 7-tap unlock, Konami unlock, and re-lock after restart.
 
 ## b9 (2026-11-27)

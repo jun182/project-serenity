@@ -46,7 +46,7 @@ public class DebugPanelController : MonoBehaviour
     void Update()
     {
         if (GameSettings.DevMode && Input.GetKeyDown(KeyCode.P))
-            PlayerPrefs.SetInt(PauseMenu.DebugPrefKey, PlayerPrefs.GetInt(PauseMenu.DebugPrefKey, 0) == 1 ? 0 : 1);
+            PauseMenu.SetDebugPref(!PauseMenu.DebugOn);
         bool want = PauseMenu.DebugOn;
         if (want != isDebugPanelActive) ApplyVisibility(want);
     }

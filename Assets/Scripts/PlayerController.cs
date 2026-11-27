@@ -109,7 +109,8 @@ public class PlayerController : MonoBehaviour
     else if (x <= -4)
         targetSpeed = top;
     speed = Mathf.Lerp(speed, targetSpeed * Time.deltaTime, accelerationSpeed * GameSettings.Get("steerAccel") * Time.deltaTime);
-    gameObject.transform.position += new Vector3(speed, 0f, 0f);
+    if (hasDied) speed = 0f; // dead: freeze during the fade-out (was: kept steering until the scene reloaded)
+    else gameObject.transform.position += new Vector3(speed, 0f, 0f);
     SteerNorm = (top > 0f && Time.deltaTime > 0f) ? Mathf.Clamp(speed / (top * Time.deltaTime), -1f, 1f) : 0f;
     // Serenity side is decided by x position (same boundary as HideObjectsPerSide): the physics trigger exit never fired on the phone.
     bool inSerenity = gameObject.transform.position.x > 5f;
@@ -152,10 +153,10 @@ public class PlayerController : MonoBehaviour
             SceneManager.LoadScene("MainMenu");
         }
     }
-    if (healing && health < 100 && !blocked)
+    if (healing && health < 100 && !blocked && !hasDied)
     {
 
-        if (healing && health < 100 && !blocked)
+        if (healing && health < 100 && !blocked && !hasDied)
         {
             health += GameSettings.Get("healSpeed") * Time.deltaTime; // tunable, default 2 = scene HEALING_SPEED
         }
