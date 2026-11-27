@@ -9,8 +9,7 @@ public class MusicManagerController : MonoBehaviour
     public enum Theme
     {
         Dark,
-        Light,
-        Broken
+        LightBrokenMix // white side: Light and Broken crossfaded by health, see SetBrokenTarget
     }
 
     public enum Sound
@@ -47,6 +46,14 @@ public class MusicManagerController : MonoBehaviour
 
     Theme currentTheme;
 
+    // White-side mix: 0 = only Light, 1 = only Broken. Eases toward brokenTarget (~0.5 s to settle), equal-power volumes.
+    const float MixSmoothTime = 0.15f;
+    float brokenMix, brokenTarget, brokenVel;
+    public float LightVolume { get { return lightAudio.mute ? 0f : lightAudio.volume; } }
+    public float BrokenVolume { get { return brokenAudio.mute ? 0f : brokenAudio.volume; } }
+
+    public void SetBrokenTarget(float t) { brokenTarget = Mathf.Clamp01(t); }
+
     void Start()
     {
         currentTheme = Theme.Dark;
@@ -62,7 +69,16 @@ public class MusicManagerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        // Time.deltaTime is 0 while paused, so the mix holds still.
+        brokenMix = Mathf.SmoothDamp(brokenMix, brokenTarget, ref brokenVel, MixSmoothTime);
+        ApplyMix();
+    }
+
+    void ApplyMix()
+    {
+        float a = Mathf.Clamp01(brokenMix) * Mathf.PI * 0.5f;
+        lightAudio.volume = Mathf.Cos(a);
+        brokenAudio.volume = Mathf.Sin(a);
     }
 
     public void PlayTheme(Theme theme)
@@ -77,18 +93,14 @@ public class MusicManagerController : MonoBehaviour
                     brokenAudio.mute = true;
                     break;
             }
-            case (Theme.Light):
-                {
-                    darkAudio.mute = true;
-                    lightAudio.mute = false;
-                    brokenAudio.mute = true;
-                    break;
-            }
-            case (Theme.Broken):
+            case (Theme.LightBrokenMix):
             {
                     darkAudio.mute = true;
-                    lightAudio.mute = true;
+                    lightAudio.mute = false;
                     brokenAudio.mute = false;
+                    // side switch is an instant cut: start at the current target, no glide
+                    brokenMix = brokenTarget; brokenVel = 0f;
+                    ApplyMix();
                     break;
             }
 

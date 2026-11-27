@@ -345,6 +345,7 @@ public class PauseMenu : MonoBehaviour
                 var pc = PlayerController.Instance;
                 string diag = pc == null ? "" : "\nbuild " + BuildInfo.Label + " " + PlayerController.DiagMusic + " trig " + PlayerController.DiagTrig + " hp " + Mathf.RoundToInt(pc.health) + " heal " + pc.IsHealing + " x " + pc.transform.position.x.ToString("0.0")
                     + "\nhits " + PlayerController.DiagHits + " serIn " + PlayerController.DiagSerEnter + " serOut " + PlayerController.DiagSerExit + " " + PlayerController.DiagTheme
+                    + (pc.Music == null ? "" : " mus L " + pc.Music.LightVolume.ToString("0.00") + " B " + pc.Music.BrokenVolume.ToString("0.00"))
                     + "\ndead " + pc.IsDead + " err " + ErrCount + " shake " + CameraShake.Trauma.ToString("0.00")
                     + (GameDirector.Instance == null ? "" : "\n" + GameSettings.GameMode + " lvl " + GameDirector.Instance.Level.ToString("0.00")
                         + " rate x" + GameDirector.Instance.RateMultiplier.ToString("0.00") + " spawned " + GameDirector.Instance.Spawned
