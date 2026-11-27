@@ -1,8 +1,10 @@
 # Board project-serenity (2026-11-27)
-Resume: print open issues. NEXT (b12): read MENU-TREE.md (design for the Y700 controller findings: overlap, no Back, screen sleep, start badge, adb key-event debugging), confirm the 2 open questions with the user, implement, build, run menu-check, commit, push; release only on OK.
+Resume: print open issues (gh -R jun182/project-serenity). NEXT: user tests b12 with the real pad on the Y700; release alpha-b12 only on OK.
 
 ## Open
-- **b11 released** (alpha-b11, jun182/project-serenity, pushed android-port 282a523): shared menu (PauseMenu.cs BuildMenu: pages main/settings/controls/debug; start screen has a Menu button top-right), game speed slider (debug), controller nav (stick/A/B/Start, SelectFx highlight when pad used). Built, 0 compile errors. ui-check NOT run, menu NOT looked at on any screen.
+- **b12 built, NOT released** (apk Builds/project-serenity-b12.apk; waiting for the user's OK to release alpha-b12). Implemented per MENU-TREE.md: one page visible at a time (start-screen buttons, Menu/II hidden while a menu is open), B = back one level, Start = open/close menu (also on start screen; it no longer starts the game), START badge under Menu/II in pad mode, black/white pad icons (A disc, selection = white), smaller Play/Exit, NeverSleep while playing, `MENU page=.. sel=..` and `MENU key=JoystickButtonN` log lines, `tools/menu-check.sh` (adb key events): 18/18 ok on the Y700.
+- Measured: Unity on Android reports A=JoystickButton0, B=1, **Start=10** (not 7: that was why Start never worked in b11). Not verified with the real pad, only adb key events. Sliders: left/right works by Unity default, "A = reset" NOT done (Default button is focusable instead).
+- Idea from user (not decided): live-tweakable UI/design variables in the debug menu so UI changes need no rebuild.
 - Nord 2T has b10 (adb): open the start screen, expect the in-app updater to offer b11; this is the live updater test (do not adb install there).
 - Y700 (adb wireless): b11 installed fresh (old com.DefaultCompany.ProjectSerenity removed). Controller prompts/menu navigation to be tested there.
 - Y700 controller test by user (b11): works partly; findings in MENU-TREE.md. Pixel still not adb-visible (USB id 18d1:4ee1 = MTP only) at last check; b11 NOT installed there.

@@ -29,7 +29,8 @@ public class StartScreen : MonoBehaviour
     GameObject iconA;
     Sprite ring;
     float loadAt = -1f, prevY;
-    static readonly Color Normal = new Color(0.15f, 0.15f, 0.15f, 0.9f), Selected = new Color(0.1f, 0.5f, 0.25f, 1f);
+    public static string Sel = "-"; // for the MENU log line
+    bool lastMenuOpen;
 
     public void Init(Transform canvas, MakeBtn make)
     {
@@ -49,8 +50,8 @@ public class StartScreen : MonoBehaviour
         cg.GetComponent<Catcher>().down = OnTouch;
 
         var c = new Vector2(0.5f, 0.5f);
-        play = make(canvas, "Play", c, new Vector2(0, -60), new Vector2(620, 120), StartGame);
-        exit = make(canvas, "Exit", c, new Vector2(0, -210), new Vector2(620, 120), PauseMenu.QuitApp);
+        play = make(canvas, "Play", c, new Vector2(0, -200), new Vector2(400, 90), StartGame);
+        exit = make(canvas, "Exit", c, new Vector2(0, -310), new Vector2(400, 90), PauseMenu.QuitApp);
         items = new[] { play, exit };
         touchExit = make(canvas, "Exit", new Vector2(0, 1), new Vector2(130, -80), new Vector2(220, 90), PauseMenu.QuitApp);
         touchExit.GetComponentInChildren<Text>().fontSize = 36;
@@ -81,18 +82,8 @@ public class StartScreen : MonoBehaviour
             hintTexts[h] = t; hintOutlines[h] = o;
         }
 
-        // Placeholder controller icon ("A") next to Play: replace with real art later.
-        iconA = new GameObject("IconA", typeof(Image));
-        iconA.transform.SetParent(play.transform, false);
-        var irt = iconA.GetComponent<RectTransform>();
-        irt.anchorMin = irt.anchorMax = new Vector2(0, 0.5f); irt.pivot = new Vector2(0.5f, 0.5f);
-        irt.anchoredPosition = new Vector2(60, 0); irt.sizeDelta = new Vector2(80, 80);
-        iconA.GetComponent<Image>().color = new Color(0.3f, 0.7f, 0.35f); iconA.GetComponent<Image>().raycastTarget = false;
-        var itgo = new GameObject("T", typeof(Text));
-        itgo.transform.SetParent(iconA.transform, false);
-        var itr = itgo.GetComponent<RectTransform>();
-        itr.anchorMin = Vector2.zero; itr.anchorMax = Vector2.one; itr.offsetMin = itr.offsetMax = Vector2.zero;
-        var it = itgo.GetComponent<Text>(); it.font = UiFont.Get(); it.fontSize = 50; it.text = "A"; it.alignment = TextAnchor.MiddleCenter; it.color = Color.black; it.raycastTarget = false;
+        // Controller icon "A" next to Play: black/white like the rest of the UI (white disc, black letter and outline).
+        iconA = PadIcons.Disc(play.transform, "A", new Vector2(0, 0.5f), new Vector2(50, 0), 64);
 
         ring = MakeRing();
         ApplyMode();
@@ -103,14 +94,16 @@ public class StartScreen : MonoBehaviour
     void ApplyMode()
     {
         if (items == null) return;
-        play.gameObject.SetActive(Controller); exit.gameObject.SetActive(Controller);
-        touchExit.gameObject.SetActive(!Controller); hint.SetActive(!Controller);
+        bool vis = !PauseMenu.MenuOpen; // only one page visible at a time: hide the start screen while the menu is open
+        play.gameObject.SetActive(Controller && vis); exit.gameObject.SetActive(Controller && vis);
+        touchExit.gameObject.SetActive(!Controller && vis); hint.SetActive(!Controller && vis);
         Highlight();
     }
 
     void Highlight()
     {
-        for (int i = 0; i < items.Length; i++) items[i].GetComponent<Image>().color = (Controller && i == idx) ? Selected : Normal;
+        for (int i = 0; i < items.Length; i++) PadIcons.Paint(items[i], Controller && i == idx);
+        Sel = Controller ? items[idx].name.Replace("Button", "") : "-";
     }
 
     void OnTouch(Vector2 pos)
@@ -166,10 +159,12 @@ public class StartScreen : MonoBehaviour
         bool was = Controller;
         if (Input.touchCount > 0 || Input.GetMouseButtonDown(0)) Controller = false;
         float y = Input.GetAxis("Vertical");
-        bool padInput = Mathf.Abs(y) > 0.5f || Mathf.Abs(Input.GetAxis("Horizontal")) > 0.5f
-            || Input.GetKeyDown(KeyCode.JoystickButton0) || Input.GetKeyDown(KeyCode.JoystickButton7) || Input.GetKeyDown(KeyCode.Return);
+        bool padInput = PadIcons.AnyPadInput();
         if (padInput && !(Input.touchCount > 0)) Controller = true;
-        if (Controller != was) { idx = 0; ApplyMode(); }
+        bool woke = Controller != was; // the press that switches to controller mode only wakes it, no action
+        if (woke) { idx = 0; ApplyMode(); }
+        bool menuChanged = lastMenuOpen != PauseMenu.MenuOpen; // the A that closes the menu must not also press Play
+        if (menuChanged) { lastMenuOpen = PauseMenu.MenuOpen; ApplyMode(); }
 
         if (hint != null && hint.activeSelf)
         {
@@ -182,11 +177,14 @@ public class StartScreen : MonoBehaviour
             }
         }
 
-        if (Controller && !PauseMenu.MenuOpen)
+        if (Controller && !PauseMenu.MenuOpen && !woke && !menuChanged)
         {
-            if (y < -0.5f && prevY >= -0.5f) { idx = (idx + 1) % items.Length; Highlight(); }
-            else if (y > 0.5f && prevY <= 0.5f) { idx = (idx + items.Length - 1) % items.Length; Highlight(); }
-            if (Input.GetKeyDown(KeyCode.JoystickButton0) || Input.GetKeyDown(KeyCode.JoystickButton7) || Input.GetKeyDown(KeyCode.Return))
+            bool down = (y < -0.5f && prevY >= -0.5f) || Input.GetKeyDown(KeyCode.DownArrow);
+            bool up = (y > 0.5f && prevY <= 0.5f) || Input.GetKeyDown(KeyCode.UpArrow);
+            if (down) { idx = (idx + 1) % items.Length; Highlight(); }
+            else if (up) { idx = (idx + items.Length - 1) % items.Length; Highlight(); }
+            // A / Enter confirms. Start opens the menu (PauseMenu), it no longer starts the game.
+            if (Input.GetKeyDown(KeyCode.JoystickButton0) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
                 items[idx].onClick.Invoke();
         }
         prevY = y;

@@ -19,3 +19,6 @@
 
 ## Debug menu: game speed slider (user request 2026-11-27)
 - Slider in the debug tools (Time.timeScale, e.g. 0.5x-5x, default 1x) to fast-forward through difficulty levels/win while testing. Reset to 1x on leaving debug/quit to menu.
+
+## Pixel 9 Pro XL wireless adb + fresh install (parked 2026-11-27, user: not relevant to the game)
+- Over USB it shows only as MTP (18d1:4ee1): needs USB debugging authorised / Wireless debugging on the same Wi-Fi before adb can see it. b11/b12 not installed there.

@@ -99,11 +99,14 @@ public class PauseMenu : MonoBehaviour
         if (!inGame)
         {
             // Start screen: one "Menu" button (top-right) opens the shared menu.
-            MakeButton(canvasGo.transform, "Menu", new Vector2(1, 1), new Vector2(-170, -80), new Vector2(280, 90), OpenMenu)
-                .GetComponentInChildren<Text>().fontSize = 36;
+            menuBtn = MakeButton(canvasGo.transform, "Menu", new Vector2(1, 1), new Vector2(-170, -80), new Vector2(280, 90), OpenMenu);
+            menuBtn.GetComponentInChildren<Text>().fontSize = 36;
+            TouchOnly(menuBtn);
+            startBadge = PadIcons.Pill(menuBtn.transform, "START", new Vector2(0.5f, 0), new Vector2(0, -34), new Vector2(150, 44), 28);
             // Update button (top-left next to Exit, hidden until Updater finds a newer release).
             var ub = MakeButton(canvasGo.transform, "", new Vector2(0, 1), new Vector2(580, -80), new Vector2(600, 90), () => { });
             ub.GetComponentInChildren<Text>().fontSize = 36;
+            TouchOnly(ub);
             gameObject.AddComponent<Updater>().Init(ub, ub.GetComponentInChildren<Text>());
             BuildMenu(canvasGo.transform);
             BuildHelpPanel(canvasGo.transform);
@@ -128,7 +131,9 @@ public class PauseMenu : MonoBehaviour
         healthFill = hbFill.GetComponent<Image>(); healthFill.color = new Color(0.1f, 0.85f, 0.2f); healthFill.raycastTarget = false;
 
         // Pause button, top-left.
-        MakeButton(canvasGo.transform, "II", new Vector2(0, 1), new Vector2(90, -90), new Vector2(120, 120), OpenMenu);
+        menuBtn = MakeButton(canvasGo.transform, "II", new Vector2(0, 1), new Vector2(90, -90), new Vector2(120, 120), OpenMenu);
+        TouchOnly(menuBtn);
+        startBadge = PadIcons.Pill(menuBtn.transform, "START", new Vector2(0.5f, 0), new Vector2(0, -34), new Vector2(150, 44), 28);
         BuildMenu(canvasGo.transform);
         BuildTuningPanel(canvasGo.transform);
         BuildHelpPanel(canvasGo.transform);
@@ -151,12 +156,22 @@ public class PauseMenu : MonoBehaviour
     public static float GameSpeed = 1f; // debug: Time.timeScale while playing (reset on leaving the game)
     public static bool PadActive { get; private set; } // last input was a controller: show the selection highlight
     public static bool MenuOpen { get; private set; }
-    static readonly Color SelCol = new Color(0.1f, 0.5f, 0.25f, 1f), NormCol = new Color(0.15f, 0.15f, 0.15f, 0.9f);
+    // Touch-only buttons (Menu / II / Exit / Update): hidden while a menu page is open, with a START badge in pad mode.
+    readonly System.Collections.Generic.List<CanvasGroup> hideWhenMenu = new System.Collections.Generic.List<CanvasGroup>();
+    GameObject startBadge; Button menuBtn;
+    // Measured on the Y700 (adb KEYCODE_BUTTON_START): Unity on Android reports Start as JoystickButton10 (A=0, B=1); 7 on desktop mappings.
+#if UNITY_ANDROID && !UNITY_EDITOR
+    public const KeyCode StartKey = KeyCode.JoystickButton10;
+#else
+    public const KeyCode StartKey = KeyCode.JoystickButton7;
+#endif
+    int lastSleep = -99; string lastState = "";
 
-    class SelectFx : MonoBehaviour, ISelectHandler, IDeselectHandler
+    void TouchOnly(Button b)
     {
-        public void OnSelect(BaseEventData e) { if (PadActive) GetComponent<Image>().color = SelCol; }
-        public void OnDeselect(BaseEventData e) { GetComponent<Image>().color = NormCol; }
+        var cg = b.gameObject.AddComponent<CanvasGroup>();
+        hideWhenMenu.Add(cg);
+        var nav = b.navigation; nav.mode = Navigation.Mode.None; b.navigation = nav;
     }
 
     void BuildMenu(Transform canvas)
@@ -169,7 +184,7 @@ public class PauseMenu : MonoBehaviour
         Func<GameObject, string, UnityAction, Button> item = null;
         Func<string, GameObject> newPage = n => { var p = new GameObject(n, typeof(RectTransform)); p.transform.SetParent(menuRoot.transform, false); var prt = p.GetComponent<RectTransform>(); prt.anchorMin = Vector2.zero; prt.anchorMax = Vector2.one; prt.offsetMin = prt.offsetMax = Vector2.zero; pages[n] = p; return p; };
         float yy = 0;
-        item = (pg, text, act) => { var b = MakeButton(pg.transform, text, new Vector2(0.5f, 0.5f), new Vector2(0, yy), new Vector2(700, 100), act); b.gameObject.AddComponent<SelectFx>(); yy -= 120; return b; };
+        item = (pg, text, act) => { var b = MakeButton(pg.transform, text, new Vector2(0.5f, 0.5f), new Vector2(0, yy), new Vector2(700, 100), act); PadIcons.AddFx(b); yy -= 120; return b; };
         Action<GameObject> back = pg => item(pg, "Back", () => ShowPage("main"));
 
         // main
@@ -177,7 +192,7 @@ public class PauseMenu : MonoBehaviour
         item(main, inGame ? "Resume" : "Close", CloseMenu);
         item(main, "Settings", () => ShowPage("settings"));
         item(main, "Controls", () => ShowPage("controls"));
-        item(main, "How to play", () => helpPanel.SetActive(true));
+        item(main, "How to play", () => OpenSub(helpPanel));
         if (inGame)
         {
             item(main, "Quit to menu", QuitToMenu);
@@ -205,7 +220,7 @@ public class PauseMenu : MonoBehaviour
             invLabel = item(dbg, "", ToggleInvincible).GetComponentInChildren<Text>();
             item(dbg, "Difficulty level +1", DebugLevelUp);
             markLabel = item(dbg, "", ToggleMarkers).GetComponentInChildren<Text>();
-            item(dbg, "Tuning sliders...", () => tuningPanel.SetActive(true));
+            item(dbg, "Tuning sliders...", () => OpenSub(tuningPanel));
             MakeSlider(dbg.transform, new Vector2(0, yy - 10), 640, "Game speed", 0.5f, 5f, 0.5f, () => 1f, () => GameSpeed, v => GameSpeed = v, () => GameSpeed = 1f); yy -= 120;
             back(dbg);
         }
@@ -225,6 +240,23 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
+    // Help / tuning pages replace the menu (one page visible at a time); CloseSub returns to the page they came from.
+    void OpenSub(GameObject panel)
+    {
+        menuRoot.SetActive(false); panel.SetActive(true);
+        var es = EventSystem.current;
+        if (es != null) { es.SetSelectedGameObject(null); if (PadActive) { var sel = panel.GetComponentInChildren<Selectable>(); if (sel != null) es.SetSelectedGameObject(sel.gameObject); } }
+    }
+
+    void CloseSub()
+    {
+        bool tun = tuningPanel != null && tuningPanel.activeSelf;
+        if (helpPanel) helpPanel.SetActive(false);
+        if (tuningPanel) tuningPanel.SetActive(false);
+        PlayerPrefs.Save();
+        menuRoot.SetActive(true); ShowPage(tun ? "debug" : "main");
+    }
+
     void OpenMenu()
     {
         if (menuRoot == null) return;
@@ -240,6 +272,7 @@ public class PauseMenu : MonoBehaviour
         menuRoot.SetActive(false);
         if (tuningPanel) tuningPanel.SetActive(false);
         if (helpPanel) helpPanel.SetActive(false);
+        var es = EventSystem.current; if (es != null) es.SetSelectedGameObject(null);
         PlayerPrefs.Save();
     }
 
@@ -291,24 +324,55 @@ public class PauseMenu : MonoBehaviour
         }
         // Input source for the selection highlight: controller vs touch/mouse.
         if (Input.touchCount > 0 || Input.GetMouseButtonDown(0)) PadActive = false;
-        else if (Mathf.Abs(Input.GetAxis("Vertical")) > 0.5f || Input.GetKeyDown(KeyCode.JoystickButton0)
-            || Input.GetKeyDown(KeyCode.JoystickButton1) || Input.GetKeyDown(KeyCode.JoystickButton7)) PadActive = true;
-        if (PadActive && MenuOpen && EventSystem.current != null && EventSystem.current.currentSelectedGameObject == null && pages.ContainsKey(page))
+        else if (PadIcons.AnyPadInput()) PadActive = true;
+        LogKeys();
+        bool sub = (helpPanel != null && helpPanel.activeSelf) || (tuningPanel != null && tuningPanel.activeSelf);
+        // Touch-only buttons hide while any menu page is open; START badge only in pad mode.
+        bool vis = !MenuOpen && !sub;
+        foreach (var cg in hideWhenMenu) { if (cg == null) continue; cg.alpha = vis ? 1f : 0f; cg.interactable = cg.blocksRaycasts = vis; }
+        if (startBadge != null) startBadge.SetActive(PadActive);
+        // Screen: keep awake while playing (a pad gives no touches for long stretches), system timeout on menus/pause.
+        int want = (inGame && !MenuOpen) ? (int)SleepTimeout.NeverSleep : (int)SleepTimeout.SystemSetting;
+        if (want != lastSleep) { lastSleep = want; Screen.sleepTimeout = want; }
+        if (PadActive && (MenuOpen || sub) && EventSystem.current != null && EventSystem.current.currentSelectedGameObject == null)
         {
-            var b0 = pages[page].GetComponentInChildren<Button>();
+            var root = sub ? (helpPanel.activeSelf ? helpPanel : tuningPanel) : pages[page];
+            var b0 = root.GetComponentInChildren<Selectable>();
             if (b0 != null) EventSystem.current.SetSelectedGameObject(b0.gameObject);
         }
+        LogState(sub);
         bool back = Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.JoystickButton1);
-        bool start = Input.GetKeyDown(KeyCode.JoystickButton7);
-        if (helpPanel != null && helpPanel.activeSelf) { if (back || start) helpPanel.SetActive(false); return; }
-        if (tuningPanel != null && tuningPanel.activeSelf) { if (back || start) { tuningPanel.SetActive(false); PlayerPrefs.Save(); } return; }
+        bool start = Input.GetKeyDown(StartKey);
+        if (sub) { if (back) CloseSub(); else if (start) CloseMenu(); return; }
         if (MenuOpen)
         {
-            if (page != "main") { if (back) ShowPage("main"); }
-            else if (back || (inGame && start)) CloseMenu();
+            if (start) CloseMenu();
+            else if (back) { if (page != "main") ShowPage("main"); else CloseMenu(); }
         }
         else if (inGame) { if (back || start) OpenMenu(); }
-        else if (back) QuitApp(); // start screen: Back/Esc quits
+        else if (start) OpenMenu();
+        else if (Input.GetKeyDown(KeyCode.Escape)) QuitApp(); // start screen: Android Back / Esc quits (pad B does nothing)
+    }
+
+    // Text log for tools/menu-check.sh: one line whenever the page or the selection changes (read with adb logcat -s Unity).
+    void LogState(bool sub)
+    {
+        string pg = sub ? (helpPanel.activeSelf ? "help" : "tuning") : MenuOpen ? page : (inGame ? "game" : "start");
+        string sel = "-";
+        if (MenuOpen || sub)
+        {
+            var g = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
+            if (g != null) { var t = g.GetComponentInChildren<Text>(); sel = g.GetComponent<Button>() != null && t != null ? t.text : g.name; }
+        }
+        else if (!inGame) sel = StartScreen.Sel;
+        string st = "page=" + pg + " sel=" + sel;
+        if (st != lastState) { lastState = st; Debug.Log("MENU " + st); }
+    }
+
+    // Which joystick button number does the pad / adb key event produce? (b12: verify B and Start mapping)
+    static void LogKeys()
+    {
+        for (int i = 0; i < 20; i++) if (Input.GetKeyDown(KeyCode.JoystickButton0 + i)) Debug.Log("MENU key=JoystickButton" + i);
     }
 
     // Application.Quit() leaves the task in recents on Android, so Back reopens the app: finish and remove the task.
@@ -362,7 +426,7 @@ public class PauseMenu : MonoBehaviour
         if (debugLabel) debugLabel.text = "Debug panel: " + (PlayerPrefs.GetInt(DebugPrefKey, 0) == 1 ? "ON" : "OFF");
     }
 
-    void OnDestroy() { IsPaused = false; MenuOpen = false; GameSpeed = 1f; Time.timeScale = 1f; }
+    void OnDestroy() { Screen.sleepTimeout = (int)SleepTimeout.SystemSetting; IsPaused = false; MenuOpen = false; GameSpeed = 1f; Time.timeScale = 1f; }
 
     void ToggleMode() { GameSettings.GameMode = GameSettings.GameMode == GameSettings.Mode.Progressive ? GameSettings.Mode.Endless : GameSettings.Mode.Progressive; RefreshLabels(); }
     void ToggleShake() { GameSettings.ScreenShake = !GameSettings.ScreenShake; RefreshLabels(); }
@@ -397,7 +461,7 @@ public class PauseMenu : MonoBehaviour
         var t = tgo.GetComponent<Text>();
         t.font = UiFont.Get(); t.fontSize = 40; t.color = Color.white;
         t.alignment = TextAnchor.MiddleLeft; t.supportRichText = true; t.raycastTarget = false; t.text = HelpText;
-        MakeButton(helpPanel.transform, "Close", new Vector2(0.5f, 0.5f), new Vector2(0, -440), new Vector2(560, 100), () => helpPanel.SetActive(false));
+        PadIcons.AddFx(MakeButton(helpPanel.transform, "Close", new Vector2(0.5f, 0.5f), new Vector2(0, -440), new Vector2(560, 100), CloseSub));
         helpPanel.SetActive(false);
     }
 
@@ -420,12 +484,12 @@ public class PauseMenu : MonoBehaviour
             refresh.Add(MakeSlider(tuningPanel.transform, new Vector2(-680 + col * 680, 330 - row * rowGap), 600, tun[i].key, tun[i].min, tun[i].max, tun[i].step, tun[i].label));
         }
         var c = new Vector2(0.5f, 0.5f);
-        MakeButton(tuningPanel.transform, "Reset all to defaults", c, new Vector2(-330, -400), new Vector2(560, 90), () =>
+        PadIcons.AddFx(MakeButton(tuningPanel.transform, "Reset all to defaults", c, new Vector2(-330, -400), new Vector2(560, 90), () =>
         {
             GameSettings.ResetTunables();
             foreach (var r in refresh) r();
-        });
-        MakeButton(tuningPanel.transform, "Back", c, new Vector2(330, -400), new Vector2(560, 90), () => { tuningPanel.SetActive(false); PlayerPrefs.Save(); });
+        }));
+        PadIcons.AddFx(MakeButton(tuningPanel.transform, "Back", c, new Vector2(330, -400), new Vector2(560, 90), CloseSub));
         tuningPanel.SetActive(false);
     }
 
@@ -448,6 +512,7 @@ public class PauseMenu : MonoBehaviour
         lt.raycastTarget = false;
         var defBtn = MakeButton(parent, "Default", new Vector2(0.5f, 0.5f), pos + new Vector2(width * 0.5f - 70, 45), new Vector2(140, 50), () => { });
         defBtn.GetComponentInChildren<Text>().fontSize = 26;
+        PadIcons.AddFx(defBtn);
 
         var go = DefaultControls.CreateSlider(new DefaultControls.Resources());
         go.transform.SetParent(parent, false);
@@ -461,6 +526,8 @@ public class PauseMenu : MonoBehaviour
             else if (img.name == "Handle") { img.color = Color.white; img.rectTransform.sizeDelta = new Vector2(44, 20); }
         }
         var s = go.GetComponent<Slider>();
+        go.name = "Slider " + label;
+        PadIcons.AddFx(s);
         s.minValue = min; s.maxValue = max;
         System.Action<float> show = v => lt.text = label + ": " + v.ToString("0.##") + (Mathf.Abs(v - def()) < step * 0.5f ? " (default)" : "");
         System.Action load = () => { float v = get(); s.SetValueWithoutNotify(v); show(v); };
