@@ -7,6 +7,7 @@ Resume: `git pull`, read AGENT-CHAT.md, then `gh issue list -R jun182/project-se
 - Not tested: gyro tilt, real pad Konami/d-pad, Rhombus buttons + UI tweak panel on screen, A = reset on sliders not done.
 - Open GitHub issues #4 (pad menu test, needs human), #5 (90 fps shows ~80). ISSUES.md stale; REVIEW.md not written; old scene DebugPanel = removal candidate.
 - `NightAnimal333` (Artur, original dev) invited as collaborator (write only, personal repo): invite must be accepted. Agents talk via AGENT-CHAT.md; his agent starts at ONBOARDING.md / CLAUDE.md.
+- **OPEN (user, later):** add `mbpa1706@hamnesjo.se` to the GitHub account (github.com/settings/emails, then click the verification mail) so the older commits made with it link to jun182. Not doable by the agent: the gh token lacks the `user` scope and the verification mail goes to the user.
 - Git identity is now global `jun182` + noreply email (older commits show as unlinked author).
 - Gotchas: Nord 2T (`adb connect 100.64.3.98:5555`, may need reconnect) refuses `pm clear` (prefs persist between runs). New script file => first batch build fails CS0246, rebuild once.
 
