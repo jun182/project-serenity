@@ -80,7 +80,7 @@ public static class PadIcons
         return false;
     }
 
-    public static float Pulse() { return 1f + 0.03f * Mathf.Sin(Time.unscaledTime * 6f); }
+    public static float Pulse() { return 1f + GameSettings.Get("uiPulse") * 0.01f * Mathf.Sin(Time.unscaledTime * 6f); }
 
     // Highlight for any selectable (menu buttons, sliders) while a pad is in use.
     public class SelectFx : MonoBehaviour, ISelectHandler, IDeselectHandler

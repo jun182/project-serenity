@@ -41,6 +41,17 @@ public static class GameSettings
         T("nearMissBuzz", "Near-miss vibration (0-255)", 160, 0, 255, 5),
         T("nearMissSlide", "Near-miss slide (minus = flip)", 0.35f, -1.5f, 1.5f, 0.05f),
     };
+    // Look-and-feel numbers for the UI tweak panel (debug): change live on the device, no rebuild. Brush.cs / PadIcons.cs read them.
+    public static readonly Tunable[] UiTunables =
+    {
+        T("uiSkew", "Button slant", 0.35f, 0, 1.2f, 0.05f),
+        T("uiRough", "Edge roughness", 0.6f, 0, 1.5f, 0.05f),
+        T("uiDry", "Dry-brush streaks", 0.5f, 0, 1, 0.05f),
+        T("uiSeed", "Stroke variant", 3, 1, 30, 1),
+        T("uiPulse", "Selection pulse %", 3, 0, 10, 0.5f),
+        T("uiBtnScale", "Menu button width x", 1, 0.6f, 1.4f, 0.05f),
+    };
+    public static System.Action UiChanged;
     static Tunable T(string k, string l, float d, float min, float max, float step) { return new Tunable { key = k, label = l, def = d, min = min, max = max, step = step }; }
 
     // Cached: obstacles read these every frame and PlayerPrefs on Android is slow.
@@ -48,6 +59,7 @@ public static class GameSettings
     public static float Default(string key)
     {
         foreach (var t in Tunables) if (t.key == key) return t.def;
+        foreach (var t in UiTunables) if (t.key == key) return t.def;
         return key == "endlessDensity" ? 1f : 0f;
     }
     public static float Get(string key)
@@ -57,8 +69,8 @@ public static class GameSettings
         return v;
     }
     // No Save() here (sliders call this every drag frame); PauseMenu saves on resume/quit.
-    public static void Set(string key, float v) { cache[key] = v; PlayerPrefs.SetFloat("t_" + key, v); }
-    public static void Reset(string key) { PlayerPrefs.DeleteKey("t_" + key); cache.Remove(key); }
+    public static void Set(string key, float v) { cache[key] = v; PlayerPrefs.SetFloat("t_" + key, v); if (key.StartsWith("ui") && UiChanged != null) UiChanged(); }
+    public static void Reset(string key) { PlayerPrefs.DeleteKey("t_" + key); cache.Remove(key); if (key.StartsWith("ui") && UiChanged != null) UiChanged(); }
     public static void ResetTunables() { foreach (var t in Tunables) PlayerPrefs.DeleteKey("t_" + t.key); cache.Clear(); PlayerPrefs.Save(); }
 
     public static bool Invincible

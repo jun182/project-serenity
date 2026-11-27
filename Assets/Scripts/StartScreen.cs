@@ -53,6 +53,7 @@ public class StartScreen : MonoBehaviour
         play = make(canvas, "Play", c, new Vector2(0, -200), new Vector2(400, 90), StartGame);
         exit = make(canvas, "Exit", c, new Vector2(0, -310), new Vector2(400, 90), PauseMenu.QuitApp);
         items = new[] { play, exit };
+        Brush.Register(play.GetComponent<Image>()); Brush.Register(exit.GetComponent<Image>());
         touchExit = make(canvas, "Exit", new Vector2(0, 1), new Vector2(130, -80), new Vector2(220, 90), PauseMenu.QuitApp);
         touchExit.GetComponentInChildren<Text>().fontSize = 36;
 

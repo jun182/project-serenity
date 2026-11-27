@@ -184,7 +184,7 @@ public class PauseMenu : MonoBehaviour
         Func<GameObject, string, UnityAction, Button> item = null;
         Func<string, GameObject> newPage = n => { var p = new GameObject(n, typeof(RectTransform)); p.transform.SetParent(menuRoot.transform, false); var prt = p.GetComponent<RectTransform>(); prt.anchorMin = Vector2.zero; prt.anchorMax = Vector2.one; prt.offsetMin = prt.offsetMax = Vector2.zero; pages[n] = p; return p; };
         float yy = 0;
-        item = (pg, text, act) => { var b = MakeButton(pg.transform, text, new Vector2(0.5f, 0.5f), new Vector2(0, yy), new Vector2(700, 100), act); PadIcons.AddFx(b); yy -= 120; return b; };
+        item = (pg, text, act) => { var b = MakeButton(pg.transform, text, new Vector2(0.5f, 0.5f), new Vector2(0, yy), new Vector2(700, 100), act); Brush.Register(b.GetComponent<Image>()); PadIcons.AddFx(b); yy -= 120; return b; };
         Action<GameObject> back = pg => item(pg, "Back", () => ShowPage("main"));
 
         // main
@@ -206,6 +206,8 @@ public class PauseMenu : MonoBehaviour
         if (!inGame) modeLabel = item(set, "", ToggleMode).GetComponentInChildren<Text>();
         MakeSlider(set.transform, new Vector2(0, yy - 10), 640, "endlessDensity", 0.5f, 3f, 0.05f, "Obstacles (Endless mode)"); yy -= 120;
         debugLabel = item(set, "", ToggleDebug).GetComponentInChildren<Text>();
+        styleLabel = item(set, "", CycleStyle).GetComponentInChildren<Text>();
+        var uib = item(set, "", ToggleUiPanel); uiPanelLabel = uib.GetComponentInChildren<Text>(); debugOnly.Add(uib.gameObject);
         back(set);
         // controls
         var ctl = newPage("controls"); yy = 360;
@@ -224,8 +226,27 @@ public class PauseMenu : MonoBehaviour
             MakeSlider(dbg.transform, new Vector2(0, yy - 10), 640, "Game speed", 0.5f, 5f, 0.5f, () => 1f, () => GameSpeed, v => GameSpeed = v, () => GameSpeed = 1f); yy -= 120;
             back(dbg);
         }
+        BuildUiPanel();
+        GameSettings.UiChanged = Brush.ReapplyAll;
         menuRoot.SetActive(false);
     }
+
+    // Live UI tweak panel (debug): right side of the menu, so the menu buttons stay visible while the sliders change them.
+    GameObject uiPanel;
+    void BuildUiPanel()
+    {
+        uiPanel = new GameObject("UiTweakPanel", typeof(Image));
+        uiPanel.transform.SetParent(menuRoot.transform, false);
+        var rt = uiPanel.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f); rt.anchoredPosition = new Vector2(680, 0); rt.sizeDelta = new Vector2(560, 800);
+        uiPanel.GetComponent<Image>().color = new Color(0, 0, 0, 0.6f);
+        var tun = GameSettings.UiTunables;
+        for (int i = 0; i < tun.Length; i++)
+            MakeSlider(uiPanel.transform, new Vector2(0, 280 - i * 120), 480, tun[i].key, tun[i].min, tun[i].max, tun[i].step, tun[i].label);
+    }
+    void ToggleUiPanel() { PlayerPrefs.SetInt("uiPanel", PlayerPrefs.GetInt("uiPanel", 0) == 1 ? 0 : 1); PlayerPrefs.Save(); RefreshLabels(); }
+    void CycleStyle() { Brush.Style = (Brush.Style + 1) % Brush.StyleNames.Length; RefreshLabels(); }
+    Text styleLabel, uiPanelLabel;
 
     void ShowPage(string n)
     {
@@ -423,6 +444,9 @@ public class PauseMenu : MonoBehaviour
         if (markLabel) markLabel.text = "Zoom test cubes (next run): " + (GameSettings.ZoomMarkers ? "ON" : "OFF");
         bool dbgOn = PlayerPrefs.GetInt(DebugPrefKey, 0) == 1;
         foreach (var g in debugOnly) g.SetActive(dbgOn);
+        if (styleLabel) styleLabel.text = "Button style: " + Brush.StyleNames[Brush.Style];
+        if (uiPanelLabel) uiPanelLabel.text = "UI tweak panel: " + (PlayerPrefs.GetInt("uiPanel", 0) == 1 ? "ON" : "OFF");
+        if (uiPanel) uiPanel.SetActive(dbgOn && PlayerPrefs.GetInt("uiPanel", 0) == 1);
         if (debugLabel) debugLabel.text = "Debug panel: " + (PlayerPrefs.GetInt(DebugPrefKey, 0) == 1 ? "ON" : "OFF");
     }
 
