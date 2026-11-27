@@ -6,7 +6,7 @@ Resume: print open issues, then check b11 on devices (see Open).
 - Nord 2T has b10 (adb): open the start screen, expect the in-app updater to offer b11; this is the live updater test (do not adb install there).
 - Y700 (adb wireless): b11 installed fresh (old com.DefaultCompany.ProjectSerenity removed). Controller prompts/menu navigation to be tested there.
 - Pixel 9 Pro XL: user asked for wireless adb + fresh b11. Not done: over USB it shows only as MTP (no adb device, no mdns service). Needs USB debugging authorised / Wireless debugging on the same Wi-Fi.
-- User asked: can we use GitHub issues + PRs to let GitHub work issues (how software-humans site was built)? Not decided; discuss, nothing posted.
+- GitHub issues enabled; #1-#3 assigned to Copilot (check for PRs, review before merge), #4 #5 for us. ui-check.sh needs a 2400x1080 device (Nord 2T); not run for b11 because the Nord was left for the user's updater/controller test. Was: can we use GitHub issues + PRs to let GitHub work issues (how software-humans site was built)? Not decided; discuss, nothing posted.
 - ISSUES.md stale (#3,#4,#8 resolved in code; #5 controller, #7 fps open). REVIEW.md not written. Old scene DebugPanel = removal candidate. Stale line in ~/april-claudia/running.md.
 - Gotcha: new script file => first batch build may fail CS0246; rebuild once and grep "error CS" ~/unity-tools/build.log.
 
