@@ -16,14 +16,15 @@ public static class CameraZoom
     {
         var cam = Camera.main;
         if (cam == null) return;
-        if (ShowTestMarkers) AddMarkers(cam);
+        if (GameSettings.ZoomMarkers) AddMarkers(cam); // debug toggle in the pause menu
         if (cam.orthographic) cam.orthographicSize /= ZoomFactor;
         else cam.fieldOfView = 2f * Mathf.Atan(Mathf.Tan(cam.fieldOfView * 0.5f * Mathf.Deg2Rad) / ZoomFactor) * Mathf.Rad2Deg;
+        if (cam.GetComponent<CameraShake>() == null) cam.gameObject.AddComponent<CameraShake>(); // captures the zoomed view as its base
     }
 
     // Zoom test: cubes placed near the screen edges of the UNZOOMED view (viewport 4% / 96%).
     // With the zoom working they fall outside the cropped view; if they are visible, the zoom did not apply.
-    public const bool ShowTestMarkers = true;
+    
 
     static void AddMarkers(Camera cam)
     {

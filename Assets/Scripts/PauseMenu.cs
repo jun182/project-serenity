@@ -37,7 +37,8 @@ public class PauseMenu : MonoBehaviour
     public const string DebugPrefKey = "debugPanelVisible"; // 0 = hidden (default), 1 = shown
 
     GameObject panel;
-    Text debugLabel, gyroLabel, invertLabel, rateLabel;
+    Text debugLabel, gyroLabel, invertLabel, rateLabel, modeLabel, shakeLabel, invLabel, markLabel;
+    GameObject tuningPanel, helpPanel; readonly System.Collections.Generic.List<GameObject> debugOnly = new System.Collections.Generic.List<GameObject>();
     public static bool IsPaused { get; private set; }
     static readonly int[] FrameRates = { 30, 60, 90, 120 };
     public static int FrameRate
@@ -99,6 +100,11 @@ public class PauseMenu : MonoBehaviour
             var g = MakeButton(canvasGo.transform, "", new Vector2(0, 0), new Vector2(230, 80), new Vector2(420, 90), ToggleGyro);
             gyroLabel = g.GetComponentInChildren<Text>();
             gyroLabel.fontSize = 36;
+            var mb = MakeButton(canvasGo.transform, "", new Vector2(1, 0), new Vector2(-230, 80), new Vector2(420, 90), ToggleMode);
+            modeLabel = mb.GetComponentInChildren<Text>(); modeLabel.fontSize = 36;
+            MakeButton(canvasGo.transform, "How to play", new Vector2(1, 1), new Vector2(-230, -80), new Vector2(420, 90), () => helpPanel.SetActive(true))
+                .GetComponentInChildren<Text>().fontSize = 36;
+            BuildHelpPanel(canvasGo.transform);
             RefreshLabels();
             return;
         }
@@ -128,19 +134,33 @@ public class PauseMenu : MonoBehaviour
         rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
         panel.GetComponent<Image>().color = new Color(0, 0, 0, 0.75f);
         var center = new Vector2(0.5f, 0.5f);
-        MakeButton(panel.transform, "Resume", center, new Vector2(0, 360), new Vector2(620, 100), Resume);
-        gyroLabel = MakeButton(panel.transform, "", center, new Vector2(0, 240), new Vector2(620, 100), ToggleGyro).GetComponentInChildren<Text>();
-        invertLabel = MakeButton(panel.transform, "", center, new Vector2(0, 120), new Vector2(620, 100), ToggleInvert).GetComponentInChildren<Text>();
-        rateLabel = MakeButton(panel.transform, "", center, new Vector2(0, 0), new Vector2(620, 100), CycleRate).GetComponentInChildren<Text>();
-        debugLabel = MakeButton(panel.transform, "", center, new Vector2(0, -120), new Vector2(620, 100), ToggleDebug).GetComponentInChildren<Text>();
-        MakeButton(panel.transform, "Quit to menu", center, new Vector2(0, -240), new Vector2(620, 100), QuitToMenu);
-        MakeButton(panel.transform, "Quit game", center, new Vector2(0, -360), new Vector2(620, 100), QuitApp);
+        MakeButton(panel.transform, "Resume", center, new Vector2(-340, 360), new Vector2(620, 100), Resume);
+        gyroLabel = MakeButton(panel.transform, "", center, new Vector2(-340, 240), new Vector2(620, 100), ToggleGyro).GetComponentInChildren<Text>();
+        invertLabel = MakeButton(panel.transform, "", center, new Vector2(-340, 120), new Vector2(620, 100), ToggleInvert).GetComponentInChildren<Text>();
+        rateLabel = MakeButton(panel.transform, "", center, new Vector2(-340, 0), new Vector2(620, 100), CycleRate).GetComponentInChildren<Text>();
+        debugLabel = MakeButton(panel.transform, "", center, new Vector2(-340, -120), new Vector2(620, 100), ToggleDebug).GetComponentInChildren<Text>();
+        MakeButton(panel.transform, "Quit to menu", center, new Vector2(-340, -240), new Vector2(620, 100), QuitToMenu);
+        MakeButton(panel.transform, "Quit game", center, new Vector2(-340, -360), new Vector2(620, 100), QuitApp);
+        // Right column: options, then debug-only tools (shown while Debug panel is ON).
+        shakeLabel = MakeButton(panel.transform, "", center, new Vector2(340, 360), new Vector2(620, 100), ToggleShake).GetComponentInChildren<Text>();
+        MakeSlider(panel.transform, new Vector2(340, 205), 560, "endlessDensity", 0.5f, 3f, "Obstacles (Endless mode)");
+        var dbg = new[] {
+            MakeButton(panel.transform, "Kill me (test death)", center, new Vector2(340, -25), new Vector2(620, 90), DebugKill),
+            MakeButton(panel.transform, "", center, new Vector2(340, -125), new Vector2(620, 90), ToggleInvincible),
+            MakeButton(panel.transform, "Difficulty level +1", center, new Vector2(340, -225), new Vector2(620, 90), DebugLevelUp),
+            MakeButton(panel.transform, "", center, new Vector2(340, -325), new Vector2(620, 90), ToggleMarkers),
+            MakeButton(panel.transform, "Tuning sliders...", center, new Vector2(340, -425), new Vector2(620, 90), () => tuningPanel.SetActive(true)) };
+        invLabel = dbg[1].GetComponentInChildren<Text>(); markLabel = dbg[3].GetComponentInChildren<Text>();
+        foreach (var b in dbg) debugOnly.Add(b.gameObject);
+        MakeButton(panel.transform, "How to play", center, new Vector2(340, 80), new Vector2(620, 90), () => helpPanel.SetActive(true));
+        BuildTuningPanel(canvasGo.transform);
+        BuildHelpPanel(canvasGo.transform);
         // FPS counter, top-right, shown only while the debug panel is on.
         var fgo = new GameObject("FpsCounter", typeof(Text));
         fgo.transform.SetParent(canvasGo.transform, false);
         var frt = fgo.GetComponent<RectTransform>();
         frt.anchorMin = frt.anchorMax = frt.pivot = new Vector2(1, 1);
-        frt.anchoredPosition = new Vector2(-30, -20); frt.sizeDelta = new Vector2(900, 200);
+        frt.anchoredPosition = new Vector2(-30, -20); frt.sizeDelta = new Vector2(1100, 420);
         fpsCounter = fgo.GetComponent<Text>();
         fpsCounter.alignment = TextAnchor.UpperRight; fpsCounter.fontSize = 34; fpsCounter.color = Color.yellow;
         fpsCounter.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -171,7 +191,7 @@ public class PauseMenu : MonoBehaviour
     {
         if (healthFill != null)
         {
-            var hp = FindObjectOfType<PlayerController>();
+            var hp = PlayerController.Instance;
             float f = hp == null ? 0f : Mathf.Clamp01(hp.health / PlayerController.HealthCap);
             healthFill.rectTransform.anchorMax = new Vector2(f, 1f);
         }
@@ -182,10 +202,14 @@ public class PauseMenu : MonoBehaviour
             fpsAccum += Time.unscaledDeltaTime; fpsFrames++;
             if (fpsAccum >= 0.5f)
             {
-                var pc = FindObjectOfType<PlayerController>();
-                string diag = pc == null ? "" : "\nbuild b4 " + PlayerController.DiagMusic + " trig " + PlayerController.DiagTrig + " hp " + Mathf.RoundToInt(pc.health) + " heal " + pc.IsHealing + " x " + pc.transform.position.x.ToString("0.0")
+                var pc = PlayerController.Instance;
+                string diag = pc == null ? "" : "\nbuild b6 " + PlayerController.DiagMusic + " trig " + PlayerController.DiagTrig + " hp " + Mathf.RoundToInt(pc.health) + " heal " + pc.IsHealing + " x " + pc.transform.position.x.ToString("0.0")
                     + "\nhits " + PlayerController.DiagHits + " serIn " + PlayerController.DiagSerEnter + " serOut " + PlayerController.DiagSerExit + " " + PlayerController.DiagTheme
-                    + "\ndead " + pc.IsDead + " err " + ErrCount + (ErrCount > 0 ? "\n" + LastErr : "");
+                    + "\ndead " + pc.IsDead + " err " + ErrCount + " shake " + CameraShake.Trauma.ToString("0.00")
+                    + (GameDirector.Instance == null ? "" : "\n" + GameSettings.GameMode + " lvl " + GameDirector.Instance.Level.ToString("0.00")
+                        + " rate x" + GameDirector.Instance.RateMultiplier.ToString("0.00") + " spawned " + GameDirector.Instance.Spawned
+                        + " near " + GameDirector.Instance.NearMisses)
+                    + (ErrCount > 0 ? "\n" + LastErr : "");
                 fpsCounter.text = Mathf.RoundToInt(fpsFrames / fpsAccum) + " fps" + diag;
                 fpsAccum = 0f; fpsFrames = 0;
             }
@@ -196,8 +220,8 @@ public class PauseMenu : MonoBehaviour
         }
     }
 
-    void Pause() { IsPaused = true; Time.timeScale = 0f; panel.SetActive(true); }
-    void Resume() { IsPaused = false; Time.timeScale = 1f; panel.SetActive(false); }
+    void Pause() { if (panel == null) return; /* start screen has no pause panel */ IsPaused = true; Time.timeScale = 0f; panel.SetActive(true); }
+    void Resume() { IsPaused = false; Time.timeScale = 1f; panel.SetActive(false); if (tuningPanel) tuningPanel.SetActive(false); if (helpPanel) helpPanel.SetActive(false); PlayerPrefs.Save(); }
     // Application.Quit() leaves the task in recents on Android, so Back reopens the app: finish and remove the task.
     public static void QuitApp()
     {
@@ -216,7 +240,7 @@ public class PauseMenu : MonoBehaviour
         Application.Quit();
     }
 
-    void QuitToMenu() { IsPaused = false; Time.timeScale = 1f; SceneManager.LoadScene("MainMenu"); }
+    void QuitToMenu() { PlayerPrefs.Save(); IsPaused = false; Time.timeScale = 1f; SceneManager.LoadScene("MainMenu"); }
 
     void ToggleDebug()
     {
@@ -240,8 +264,105 @@ public class PauseMenu : MonoBehaviour
         if (gyroLabel) gyroLabel.text = "Tilt steering: " + (GyroSettings.Enabled ? "ON" : "OFF");
         if (rateLabel) rateLabel.text = "Frame rate: " + FrameRate;
         if (invertLabel) invertLabel.text = "Invert tilt: " + (GyroSettings.Invert ? "ON" : "OFF");
+        if (modeLabel) modeLabel.text = "Mode: " + GameSettings.GameMode;
+        if (shakeLabel) shakeLabel.text = "Screen shake: " + (GameSettings.ScreenShake ? "ON" : "OFF");
+        if (invLabel) invLabel.text = "Invincible: " + (GameSettings.Invincible ? "ON" : "OFF");
+        if (markLabel) markLabel.text = "Zoom test cubes (next run): " + (GameSettings.ZoomMarkers ? "ON" : "OFF");
+        bool dbgOn = PlayerPrefs.GetInt(DebugPrefKey, 0) == 1;
+        foreach (var g in debugOnly) g.SetActive(dbgOn);
         if (debugLabel) debugLabel.text = "Debug panel: " + (PlayerPrefs.GetInt(DebugPrefKey, 0) == 1 ? "ON" : "OFF");
     }
 
     void OnDestroy() { IsPaused = false; Time.timeScale = 1f; }
+
+    void ToggleMode() { GameSettings.GameMode = GameSettings.GameMode == GameSettings.Mode.Progressive ? GameSettings.Mode.Endless : GameSettings.Mode.Progressive; RefreshLabels(); }
+    void ToggleShake() { GameSettings.ScreenShake = !GameSettings.ScreenShake; RefreshLabels(); }
+    void ToggleInvincible() { GameSettings.Invincible = !GameSettings.Invincible; RefreshLabels(); }
+    void ToggleMarkers() { GameSettings.ZoomMarkers = !GameSettings.ZoomMarkers; RefreshLabels(); }
+    void DebugKill() { if (PlayerController.Instance) PlayerController.Instance.DebugKill(); Resume(); }
+    void DebugLevelUp() { if (GameDirector.Instance) GameDirector.Instance.SkipLevel(); }
+
+    const string HelpText =
+        "<b>How to play</b>\n\n" +
+        "<b>Steer:</b> hold the left or right half of the screen to move left or right.\n" +
+        "(Or tilt the phone if Tilt steering is ON in the menu. Keyboard: A / D, Esc = pause.)\n\n" +
+        "<b>White side (left):</b> obstacles fall toward you. Every hit costs health:\n" +
+        "the green bar at the bottom. When it is empty, you die.\n\n" +
+        "<b>Black side (right), Serenity:</b> you slowly heal, but dark blockers push you back out.\n\n" +
+        "<b>Progressive mode</b> (default): it gets harder over time. At the top level,\n" +
+        "survive the countdown to win.\n" +
+        "<b>Endless mode:</b> survive as long as you can. Set the obstacle amount in the pause menu.\n" +
+        "Change mode on the start screen (bottom right). Pause: the II button, top left.";
+
+    void BuildHelpPanel(Transform canvas)
+    {
+        helpPanel = new GameObject("HelpPanel", typeof(Image));
+        helpPanel.transform.SetParent(canvas, false);
+        var rt = helpPanel.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
+        helpPanel.GetComponent<Image>().color = new Color(0, 0, 0, 0.92f);
+        var tgo = new GameObject("HelpText", typeof(Text));
+        tgo.transform.SetParent(helpPanel.transform, false);
+        var trt = tgo.GetComponent<RectTransform>();
+        trt.anchorMin = trt.anchorMax = new Vector2(0.5f, 0.5f); trt.anchoredPosition = new Vector2(0, 60); trt.sizeDelta = new Vector2(1700, 820);
+        var t = tgo.GetComponent<Text>();
+        t.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); t.fontSize = 40; t.color = Color.white;
+        t.alignment = TextAnchor.MiddleLeft; t.supportRichText = true; t.raycastTarget = false; t.text = HelpText;
+        MakeButton(helpPanel.transform, "Close", new Vector2(0.5f, 0.5f), new Vector2(0, -440), new Vector2(560, 100), () => helpPanel.SetActive(false));
+        helpPanel.SetActive(false);
+    }
+
+    // Debug tuning page: one slider per GameSettings.Tunables entry, two columns, values kept in PlayerPrefs.
+    void BuildTuningPanel(Transform canvas)
+    {
+        tuningPanel = new GameObject("TuningPanel", typeof(Image));
+        tuningPanel.transform.SetParent(canvas, false);
+        var rt = tuningPanel.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one; rt.offsetMin = rt.offsetMax = Vector2.zero;
+        tuningPanel.GetComponent<Image>().color = new Color(0, 0, 0, 0.9f);
+        var tun = GameSettings.Tunables;
+        var sliders = new System.Collections.Generic.List<Slider>();
+        for (int i = 0; i < tun.Length; i++)
+        {
+            int col = i < 6 ? 0 : 1, row = i < 6 ? i : i - 6;
+            sliders.Add(MakeSlider(tuningPanel.transform, new Vector2(col == 0 ? -460 : 460, 400 - row * 140), 760, tun[i].key, tun[i].min, tun[i].max, tun[i].label));
+        }
+        var c = new Vector2(0.5f, 0.5f);
+        MakeButton(tuningPanel.transform, "Reset to defaults", c, new Vector2(-330, -460), new Vector2(560, 90), () =>
+        {
+            GameSettings.ResetTunables();
+            for (int i = 0; i < tun.Length; i++) sliders[i].value = GameSettings.Get(tun[i].key);
+        });
+        MakeButton(tuningPanel.transform, "Back", c, new Vector2(330, -460), new Vector2(560, 90), () => { tuningPanel.SetActive(false); PlayerPrefs.Save(); });
+        tuningPanel.SetActive(false);
+    }
+
+    Slider MakeSlider(Transform parent, Vector2 pos, float width, string key, float min, float max, string label)
+    {
+        var lgo = new GameObject(label + "Label", typeof(Text));
+        lgo.transform.SetParent(parent, false);
+        var lrt = lgo.GetComponent<RectTransform>();
+        lrt.anchorMin = lrt.anchorMax = new Vector2(0.5f, 0.5f); lrt.anchoredPosition = pos + new Vector2(0, 45); lrt.sizeDelta = new Vector2(width, 50);
+        var lt = lgo.GetComponent<Text>();
+        lt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); lt.fontSize = 34; lt.color = Color.white; lt.alignment = TextAnchor.MiddleLeft;
+        lt.raycastTarget = false;
+
+        var go = DefaultControls.CreateSlider(new DefaultControls.Resources());
+        go.transform.SetParent(parent, false);
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f); rt.anchoredPosition = pos; rt.sizeDelta = new Vector2(width, 40);
+        // No sprites in DefaultControls.Resources: colour the plain images so the parts are distinguishable.
+        foreach (var img in go.GetComponentsInChildren<Image>())
+        {
+            if (img.name == "Background") img.color = new Color(0.3f, 0.3f, 0.3f);
+            else if (img.name == "Fill") img.color = new Color(0.1f, 0.75f, 0.25f);
+            else if (img.name == "Handle") { img.color = Color.white; img.rectTransform.sizeDelta = new Vector2(44, 20); }
+        }
+        var s = go.GetComponent<Slider>();
+        s.minValue = min; s.maxValue = max; s.value = GameSettings.Get(key);
+        System.Action<float> show = v => lt.text = label + ": " + v.ToString("0.##") + (Mathf.Approximately(v, GameSettings.Default(key)) ? " (default)" : "");
+        show(s.value);
+        s.onValueChanged.AddListener(v => { GameSettings.Set(key, v); show(v); });
+        return s;
+    }
 }

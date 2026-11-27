@@ -117,7 +117,6 @@ public class MusicManagerController : MonoBehaviour
                 }
             case Sound.Hit:
                 {
-                    Debug.Log(lastHitSound);
                     if (lastHitSound == 1)
                     {
                         hit2.Play();

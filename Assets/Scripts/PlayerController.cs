@@ -36,8 +36,13 @@ public class PlayerController : MonoBehaviour
     public static string DiagTheme = "-", DiagMusic = "-";
     public bool IsHealing { get { return healing; } }
     public bool IsDead { get { return hasDied; } }
+    public static PlayerController Instance { get; private set; }
+    void Awake() { Instance = this; }
+    void OnDestroy() { if (Instance == this) Instance = null; }
+    public void DebugKill() { health = 0f; }
     public const float HealthCap = 100f; // healing stops at 100; scene MAX_HEALTH is 0 and unused
     private bool blocked = false;
+    private int blockerCount; // overlapping SerenityBlockers; blocked until all have exited
 
     public float topSpeed;
     public float accelerationSpeed;
@@ -122,7 +127,7 @@ public class PlayerController : MonoBehaviour
     if (healing && !blocked && health > 0)
     {
         heartTimer -= Time.deltaTime;
-        if (heartTimer <= 0f) { Haptics.Heartbeat(); heartTimer = 0.9f; }
+        if (heartTimer <= 0f) { Haptics.Heartbeat(); CameraShake.Beat(); heartTimer = CameraShake.BeatPeriod; }
     }
     else heartTimer = 0f;
     // Death check runs on both sides (was inside the !healing branch); b3 showed hp -660 with hasDied still false.
@@ -147,7 +152,7 @@ public class PlayerController : MonoBehaviour
 
         if (healing && health < 100 && !blocked)
         {
-            health += HEALING_SPEED * Time.deltaTime;
+            health += GameSettings.Get("healSpeed") * Time.deltaTime; // tunable, default 2 = scene HEALING_SPEED
         }
 
     }
@@ -161,7 +166,7 @@ public class PlayerController : MonoBehaviour
         if (!healing)
         {
             timeInLight += Time.deltaTime;
-            if (timeInLight >= maxTimeInLight)
+            if (timeInLight >= GameSettings.Get("maxTimeInLight"))
             {
                 musicManagerController.PlayTheme(MusicManagerController.Theme.Broken);
             }
@@ -172,17 +177,7 @@ public class PlayerController : MonoBehaviour
             // }
 
 
-            if (!healing) {
-                timeInLight += Time.deltaTime;
-                if (timeInLight >= maxTimeInLight)
-                {
-                    musicManagerController.PlayTheme(MusicManagerController.Theme.Broken);
-                }
-            }
-            else
-            {
-                timeInLight = 0;
-            }
+            // (removed a duplicate copy of the timeInLight block above: it made the timer run at 2x)
 
         }
     }
@@ -193,11 +188,14 @@ public class PlayerController : MonoBehaviour
             DiagTrig++;
         if (!hasDied)
         {
-            if (collider.gameObject.tag == "Obstacle")
+            bool won = GameDirector.Instance != null && GameDirector.Instance.Won;
+            if (collider.gameObject.tag == "Obstacle" && !won)
             {
-                // Debug.Log("Hit an obstacle!");
+                var oc = collider.GetComponentInParent<ObstacleController>();
+                if (oc != null) oc.HitPlayer = true; // no near-miss shake for this one
                 musicManagerController.PlaySound(MusicManagerController.Sound.Hit);
-                health -= DAMAGE_ON_HIT;
+                if (!GameSettings.Invincible) health -= GameSettings.Get("damage"); // tunable, default 10 = scene DAMAGE_ON_HIT
+                CameraShake.Hit();
                 DiagHits++;
                 Haptics.Hit();
             }
@@ -208,7 +206,7 @@ public class PlayerController : MonoBehaviour
             if (collider.gameObject.tag == "SerenityBlocker")
             {
                 musicManagerController.PlaySound(MusicManagerController.Sound.SerenityBlocked);
-                blocked = true;
+                blockerCount++; blocked = true;
             }
         }
 
@@ -219,7 +217,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("TriggerExit");
             if (collider.gameObject.tag == "SerenityBlocker")
             {
-                blocked = false;
+                blockerCount = Mathf.Max(0, blockerCount - 1); blocked = blockerCount > 0;
             }
 
         

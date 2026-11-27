@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ObstacleController : MonoBehaviour
@@ -7,21 +5,27 @@ public class ObstacleController : MonoBehaviour
     [SerializeField]
     private float SPEED;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public bool HitPlayer; // set by PlayerController when this obstacle hits
+    bool passed;
 
-    // Update is called once per frame
     void Update()
     {
-
-        transform.position += (new Vector3(0, 0, -1)) * SPEED * Time.deltaTime;
-
-        if (transform.position.z <= -30f){
+        transform.position += new Vector3(0, 0, -1) * SPEED * GameSettings.Get("obstacleSpeed") * Time.deltaTime;
+        // Near miss: crossed the player's z without hitting, close in x, player on the obstacle side.
+        var pc = PlayerController.Instance;
+        if (!passed && pc != null && transform.position.z < pc.transform.position.z)
+        {
+            passed = true;
+            if (!HitPlayer && !pc.IsDead && !pc.IsHealing
+                && Mathf.Abs(transform.position.x - pc.transform.position.x) < GameSettings.Get("nearMissDist"))
+            {
+                CameraShake.NearMiss();
+                if (GameDirector.Instance != null) GameDirector.Instance.NearMisses++;
+            }
+        }
+        if (transform.position.z <= -30f)
+        {
             Destroy(this.gameObject);
         }
-        
     }
 }
