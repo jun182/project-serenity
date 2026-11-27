@@ -27,50 +27,37 @@ public class DebugPanelController : MonoBehaviour
 
     //public KeyCode toggleDebugPanel = KeyCode.P;
     
-    public bool isDebugPanelActive = true;
+    public bool isDebugPanelActive = true; // state last applied; real setting is the PlayerPrefs key
 
   
-    // Start is called before the first frame update
+    // The controller lives on the panel root, so hide children + background instead of deactivating the root.
     void Start()
     {
-        speedSlider.value = playerController.SPEED;
-        maxHealthSlider.value = playerController.MAX_HEALTH;
-        damageOnHitSlider.value = playerController.DAMAGE_ON_HIT;
-        healingSpeedSlider.value = playerController.HEALING_SPEED;
-        dragModifierSlider.value = playerController.DRAG_MODIFIER;
-        accelerationModifierSlider.value = playerController.ACCELERATION_MODIFIER;
-        maxVelocitySlider.value = playerController.MAX_VELOCITY;
-        //set debug panel to active
-        debugPanel.SetActive(true);
-
+        if (speedSlider) speedSlider.value = playerController.SPEED;
+        if (maxHealthSlider) maxHealthSlider.value = playerController.MAX_HEALTH;
+        if (damageOnHitSlider) damageOnHitSlider.value = playerController.DAMAGE_ON_HIT;
+        if (healingSpeedSlider) healingSpeedSlider.value = playerController.HEALING_SPEED;
+        if (dragModifierSlider) dragModifierSlider.value = playerController.DRAG_MODIFIER;
+        if (accelerationModifierSlider) accelerationModifierSlider.value = playerController.ACCELERATION_MODIFIER;
+        if (maxVelocitySlider) maxVelocitySlider.value = playerController.MAX_VELOCITY;
+        ApplyVisibility(PlayerPrefs.GetInt(PauseMenu.DebugPrefKey, 0) == 1);
     }
-// Update is called once per frame
-void Update()
-{
-    //when P is pressed, if isDebugPanelActive is true, set it to false, and vice versa
-    if (Input.GetKeyDown(KeyCode.P))
+
+    void Update()
     {
-        isDebugPanelActive = !isDebugPanelActive;
+        if (Input.GetKeyDown(KeyCode.P))
+            PlayerPrefs.SetInt(PauseMenu.DebugPrefKey, PlayerPrefs.GetInt(PauseMenu.DebugPrefKey, 0) == 1 ? 0 : 1);
+        bool want = PlayerPrefs.GetInt(PauseMenu.DebugPrefKey, 0) == 1;
+        if (want != isDebugPanelActive) ApplyVisibility(want);
     }
 
-    Debug.Log("NISINDAONDOA");
-
-
-    //when isDebugPanelActive is false, set the debug panel X coordinates to 620 and Y coordinates to -107
-    if (isDebugPanelActive == false)
+    void ApplyVisibility(bool visible)
     {
-        debugPanel.transform.position = new Vector3(620, 400, 0);
+        isDebugPanelActive = visible;
+        foreach (Transform c in transform) c.gameObject.SetActive(visible);
+        var bg = GetComponent<Image>();
+        if (bg) bg.enabled = visible;
     }
-
-    //when isDebugPanelActive is true, set the debug panel X coordinates to 286 and Y coordinates to -107
-    if (isDebugPanelActive == true)
-    {
-        debugPanel.transform.position = new Vector3(286, -150, 0);
-    }
-
-    
-}
-
 
     public void OnSpeedChanged() {
     playerController.SPEED = speedSlider.value;
