@@ -16,6 +16,8 @@ Resume order: (1) ask the user for b7 test results, (2) tick off open issues + w
   So the cause is on the tester's side: likely a corrupt/partial download or a non-arm64 device (build is arm64-v8a only;
   fix = add ARMv7 in Player Settings). Waiting for the tester's device/Android version and file hash. Oddity: b7 has a 13 MB
   zero-filled gap inside the zip (Gradle incremental packaging), harmless as far as tested.
+  Rebuilt same code → `project-serenity-b7-rebuild1.apk` (sha256 `f1ce87e0…33cea0`), installs on the Y700; published as
+  pre-release `alpha-b7-rebuild1` on jun182/project-serenity (fork; note `gh` defaults to upstream NightAnimal333, always pass `-R`).
 
 ## Next 1: tick off open issues
 - ISSUES.md is stale: #1-#4, #8, #9 look resolved by user tests (install, touch, pause, tilt, death, music): confirm with the user, move to Done.
